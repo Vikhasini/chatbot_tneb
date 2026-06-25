@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}FAQ — TNEB Digital Helpdesk{% endblock %}
+{% block extra_css %}
+<style>
+.pub-nav{background:#fff;border-bottom:1px solid #E2E8F0;position:sticky;top:0;z-index:100}
+.pub-nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:60px}
+.pub-brand{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+.pub-brand-name{font-size:15px;font-weight:800;color:#004A99}
+.pub-brand-sub{font-size:10.5px;color:#9AA5BE}
+.pub-nav-links{display:flex;align-items:center;gap:.25rem}
+.pub-nav-link{padding:.4rem .85rem;border-radius:20px;font-size:13px;font-weight:500;color:#1A2B4B;text-decoration:none;transition:background .13s,color .13s}
+.pub-nav-link:hover{background:#F0F4FA;color:#004A99}
+.pub-nav-link.active{background:#EBF3FF;color:#004A99;font-weight:600}
+.pub-login-btn{background:#004A99;color:#fff;border-radius:20px;padding:.4rem 1.1rem;font-size:13px;font-weight:600;text-decoration:none}
+.pub-login-btn:hover{background:#003370;color:#fff}
+.faq-page{min-height:calc(100vh - 60px);background:#F8F9FB;padding:3rem 1.5rem 4rem}
+.faq-inner{max-width:820px;margin:0 auto}
+.faq-hero{background:linear-gradient(135deg,#004A99 0%,#0062cc 60%,#0F8B8D 100%);border-radius:18px;padding:2.5rem 2rem;color:#fff;margin-bottom:2rem;box-shadow:0 6px 24px rgba(0,74,153,.18);text-align:center}
+.faq-hero h2{font-size:26px;font-weight:800;margin-bottom:.4rem}
+.faq-hero p{opacity:.8;font-size:14px;margin:0}
+.faq-section{margin-bottom:1.75rem}
+.faq-section-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#0F8B8D;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.faq-item{background:#fff;border:1px solid #E2E8F0;border-radius:12px;margin-bottom:.6rem;overflow:hidden;box-shadow:0 1px 5px rgba(0,74,153,.04)}
+.faq-q{padding:.9rem 1.1rem;font-size:14px;font-weight:600;color:#1A2B4B;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.75rem;user-select:none}
+.faq-q:hover{background:#F8F9FB}
+.faq-q i.toggle{color:#9AA5BE;font-size:15px;transition:transform .2s;flex-shrink:0}
+.faq-q.open i.toggle{transform:rotate(180deg);color:#004A99}
+.faq-a{display:none;padding:.1rem 1.1rem 1rem;font-size:13.5px;color:#4A5568;line-height:1.7;border-top:1px solid #F0F4FA}
+.faq-a.show{display:block}
+.contact-card{background:#fff;border:1.5px solid #004A99;border-radius:14px;padding:1.5rem;text-align:center;box-shadow:0 2px 12px rgba(0,74,153,.08)}
+.contact-card h5{font-size:16px;font-weight:700;color:#004A99;margin-bottom:.5rem}
+.contact-item{font-size:14px;color:#1A2B4B;margin-bottom:.4rem}
+.pub-footer{background:#1A2B4B;color:rgba(255,255,255,.6);padding:1.5rem;font-size:12.5px}
+.pub-footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+</style>
+{% endblock %}
+{% block body %}
+<nav class="pub-nav">
+  <div class="pub-nav-inner">
+    <a href="{{ url_for('public.home') }}" class="pub-brand">
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="10" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div><div class="pub-brand-name">TNEB Digital Helpdesk</div><div class="pub-brand-sub">Tamil Nadu Electricity Board</div></div>
+    </a>
+    <div class="pub-nav-links">
+      <a href="{{ url_for('public.helpdesk') }}" class="pub-nav-link"><i class="bi bi-chat-dots me-1"></i>Helpdesk</a>
+      <a href="{{ url_for('public.track') }}"    class="pub-nav-link"><i class="bi bi-ticket me-1"></i>Track Ticket</a>
+      <a href="{{ url_for('public.faq') }}"      class="pub-nav-link active"><i class="bi bi-question-circle me-1"></i>FAQ</a>
+      <a href="{{ url_for('auth.login') }}"      class="pub-login-btn ms-2"><i class="bi bi-person me-1"></i>Employee Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="faq-page">
+  <div class="faq-inner">
+    <div class="faq-hero">
+      <h2><i class="bi bi-question-circle-fill me-2"></i>Frequently Asked Questions</h2>
+      <p>Quick answers to common questions about TNEB email services and helpdesk procedures.</p>
+    </div>
+
+    <div class="faq-section">
+      <div class="faq-section-title"><i class="bi bi-envelope"></i> Official Email</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">How do I get an official TNEB email address?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">New employees must submit an <strong>Official Email Request</strong> via the <a href="{{ url_for('public.request_email') }}">Request Official Email</a> page. Provide your Employee ID, designation, department, and office location. An administrator will verify your details and create the email address within 2–3 working days.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">What is the format of TNEB official email addresses?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Official TNEB emails follow the format: <code>designation_district@tneb.in</code>. For example, an Assistant Engineer in Madurai would be <code>ae_madurai@tneb.in</code>. The exact email is assigned by the IT department during provisioning.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">How long does email creation take after approval?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Once an admin approves your email request, provisioning typically takes <strong>1–2 working days</strong>. You will be notified by the IT department once the account is active. Urgent cases can be escalated by contacting the helpdesk directly.</div></div>
+    </div>
+
+    <div class="faq-section">
+      <div class="faq-section-title"><i class="bi bi-key"></i> Password & Access</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">I forgot my email password. What should I do?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Visit the <a href="{{ url_for('public.forgot_password') }}">Forgot Password</a> page and fill in your Employee ID, registered mobile number, official email address, and reason. An administrator will verify your identity and generate a temporary password within <strong>4 working hours</strong>. You must change the temporary password immediately after login.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">My account is locked. How do I unlock it?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Account lockouts occur after multiple failed login attempts. Use the <a href="{{ url_for('public.helpdesk') }}">Support Chatbot</a> to report an "Account Locked" issue, or raise a support ticket. An admin will unlock your account typically within 2 hours.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">How do I change my email password?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Log in to your TNEB email at <strong>mail.tneb.in</strong> → Settings → Security → Change Password. Your password must be at least 12 characters and include uppercase, lowercase, numbers, and special characters as per the TNEB password policy effective July 2025.</div></div>
+    </div>
+
+    <div class="faq-section">
+      <div class="faq-section-title"><i class="bi bi-ticket-detailed"></i> Support Tickets</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">How do I raise a support ticket?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Employees can raise tickets via the <a href="{{ url_for('auth.login') }}">Employee Dashboard</a> after logging in. Public users can report issues via the <a href="{{ url_for('public.helpdesk') }}">Support Chatbot</a>, which automatically creates a ticket. You'll receive a Ticket ID (e.g. TKT1025) to track your request.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">How long does it take to resolve a ticket?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Response times: <strong>High/Critical</strong> priority: 2 hours. <strong>Medium</strong>: 4 working hours. <strong>Low</strong>: 1 working day. These are target times; actual resolution depends on issue complexity. You can track real-time status using your Ticket ID.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">Can I track my ticket without logging in?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Yes. Visit the <a href="{{ url_for('public.track') }}">Track Ticket</a> page and enter your Ticket ID. You can see the current status, admin response, and a progress timeline — all without logging in.</div></div>
+    </div>
+
+    <div class="faq-section">
+      <div class="faq-section-title"><i class="bi bi-envelope-x"></i> Email Issues</div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">I'm not receiving emails. What should I check first?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Check: (1) Spam/Junk folder, (2) Storage quota — your mailbox may be full, (3) Email filters that may be redirecting mail. If none of these apply, use the <a href="{{ url_for('public.helpdesk') }}">Support Bot</a> to report "Mail Not Received" and a ticket will be raised.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggle(this)">I cannot send emails. What is the issue?<i class="bi bi-chevron-down toggle"></i></div><div class="faq-a">Common causes: (1) Attachment too large (limit: 25MB), (2) Account suspended for policy violation, (3) Outgoing mail server issue. Report via the <a href="{{ url_for('public.helpdesk') }}">Support Bot</a> with the error message you see and our team will investigate.</div></div>
+    </div>
+
+    <div class="contact-card mt-4">
+      <h5><i class="bi bi-headset me-2"></i>Still Need Help?</h5>
+      <p style="font-size:13.5px;color:#6B7A99;margin-bottom:1rem">Our IT helpdesk team is available Monday to Friday, 9 AM to 6 PM.</p>
+      <div class="contact-item"><i class="bi bi-telephone me-2 text-primary"></i><strong>044-2345-6789</strong></div>
+      <div class="contact-item"><i class="bi bi-envelope me-2 text-primary"></i><strong>helpdesk@tneb.in</strong></div>
+      <div class="mt-2">
+        <a href="{{ url_for('public.helpdesk') }}" style="background:#004A99;color:#fff;border-radius:20px;padding:7px 20px;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
+          <i class="bi bi-chat-dots-fill"></i> Chat with Support Bot
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="pub-footer"><div class="pub-footer-inner">
+  <span>© 2025 Tamil Nadu Electricity Board — TNEB Digital Helpdesk</span>
+  <span>IT Helpdesk: <strong style="color:#fff">044-2345-6789</strong> | helpdesk@tneb.in</span>
+</div></footer>
+{% endblock %}
+{% block extra_js %}
+<script>
+function toggle(el) {
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('show');
+}
+</script>
+{% endblock %}

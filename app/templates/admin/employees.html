@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Employees — Admin{% endblock %}
+
+{% block body %}
+<header class="portal-header">
+    <div class="header-inner">
+        <div class="header-brand">
+            <div class="header-logo">
+                <svg width="38" height="38" viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="10" fill="#004A99"/>
+                    <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+                </svg>
+            </div>
+            <div class="header-brand-text">
+                <span class="header-title">Employee Directory</span>
+                <span class="header-sub">TNEB Email Support Portal</span>
+            </div>
+        </div>
+        <nav class="admin-top-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{{ url_for('admin.ticket_list') }}" class="admin-nav-link"><i class="bi bi-ticket"></i> Tickets</a>
+            <a href="{{ url_for('admin.password_requests') }}" class="admin-nav-link"><i class="bi bi-key"></i> Password Requests</a>
+            <a href="{{ url_for('admin.employees') }}" class="admin-nav-link active"><i class="bi bi-people"></i> Employees</a>
+        </nav>
+        <div class="header-actions">
+            <a href="{{ url_for('auth.logout') }}" class="header-icon-btn"><i class="bi bi-box-arrow-right"></i></a>
+        </div>
+    </div>
+</header>
+
+<main class="portal-main admin-main">
+    <div class="container-xl px-4 py-4">
+        <div class="portal-card mb-4">
+            <div class="portal-card-body">
+                <form method="GET" class="d-flex gap-3">
+                    <div class="input-with-icon flex-grow-1">
+                        <i class="bi bi-search"></i>
+                        <input type="text" name="search" class="form-control portal-input"
+                               value="{{ search }}" placeholder="Search by name, employee ID, office…">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <a href="{{ url_for('admin.employees') }}" class="btn btn-outline-secondary">Clear</a>
+                </form>
+            </div>
+        </div>
+
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <span><i class="bi bi-people me-2"></i>Employees
+                    <span class="text-muted small ms-2">({{ employees.total }} total)</span>
+                </span>
+            </div>
+            <div class="portal-card-body p-0">
+                <div class="table-responsive">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Designation</th>
+                                <th>Department</th>
+                                <th>Office</th>
+                                <th>District</th>
+                                <th>Official Email</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for e in employees.items %}
+                            <tr>
+                                <td><code>{{ e.employee_id }}</code></td>
+                                <td class="fw-500">{{ e.name }}</td>
+                                <td class="text-muted small">{{ e.designation }}</td>
+                                <td class="text-muted small">{{ e.department }}</td>
+                                <td class="text-muted small">{{ e.office_location }}</td>
+                                <td class="text-muted small">{{ e.district }}</td>
+                                <td>
+                                    {% if e.official_email %}
+                                    <a href="mailto:{{ e.official_email.email_address }}" class="email-link-sm">
+                                        {{ e.official_email.email_address }}
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="status-badge {{ 'status-resolved' if e.is_active else 'status-closed' }}">
+                                        {{ 'Active' if e.is_active else 'Inactive' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if employees.pages > 1 %}
+            <div class="portal-card-footer">
+                <nav>
+                    <ul class="pagination mb-0 justify-content-end">
+                        {% if employees.has_prev %}
+                        <li class="page-item"><a class="page-link" href="?page={{ employees.prev_num }}&search={{ search }}">Previous</a></li>
+                        {% endif %}
+                        {% for p in employees.iter_pages() %}
+                        {% if p %}
+                        <li class="page-item {% if p == employees.page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ p }}&search={{ search }}">{{ p }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% if employees.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ employees.next_num }}&search={{ search }}">Next</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

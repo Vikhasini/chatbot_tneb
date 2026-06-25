@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Manage Tickets — Admin{% endblock %}
+
+{% block body %}
+<header class="portal-header">
+    <div class="header-inner">
+        <div class="header-brand">
+            <div class="header-logo">
+                <svg width="38" height="38" viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="10" fill="#004A99"/>
+                    <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+                </svg>
+            </div>
+            <div class="header-brand-text">
+                <span class="header-title">Ticket Management</span>
+                <span class="header-sub">TNEB Email Support Portal</span>
+            </div>
+        </div>
+        <nav class="admin-top-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{{ url_for('admin.ticket_list') }}" class="admin-nav-link active"><i class="bi bi-ticket"></i> Tickets</a>
+            <a href="{{ url_for('admin.password_requests') }}" class="admin-nav-link"><i class="bi bi-key"></i> Password Requests</a>
+            <a href="{{ url_for('admin.employees') }}" class="admin-nav-link"><i class="bi bi-people"></i> Employees</a>
+        </nav>
+        <div class="header-actions">
+            <a href="{{ url_for('auth.logout') }}" class="header-icon-btn"><i class="bi bi-box-arrow-right"></i></a>
+        </div>
+    </div>
+</header>
+
+<main class="portal-main admin-main">
+    <div class="container-xl px-4 py-4">
+
+        <!-- Filters -->
+        <div class="portal-card mb-4">
+            <div class="portal-card-body">
+                <form method="GET" class="d-flex flex-wrap gap-3 align-items-end">
+                    <div class="flex-grow-1" style="min-width:200px">
+                        <label class="form-label mb-1">Search</label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-search"></i>
+                            <input type="text" name="search" class="form-control portal-input"
+                                   value="{{ search }}" placeholder="Ticket ID, Employee, Category…">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label mb-1">Status Filter</label>
+                        <select name="status" class="form-select portal-input">
+                            <option value="">All Statuses</option>
+                            {% for s in ['Pending','Assigned','In Progress','Resolved','Closed'] %}
+                            <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                        <a href="{{ url_for('admin.ticket_list') }}" class="btn btn-outline-secondary">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <span><i class="bi bi-ticket-detailed me-2"></i>Support Tickets
+                    <span class="ms-2 text-muted small">({{ tickets.total }} total)</span>
+                </span>
+            </div>
+            <div class="portal-card-body p-0">
+                <div class="table-responsive">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Employee</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in tickets.items %}
+                            <tr id="row-{{ t.id }}">
+                                <td><code>{{ t.ticket_id }}</code></td>
+                                <td>
+                                    <div class="fw-500">{{ t.employee.name }}</div>
+                                    <div class="text-muted small">{{ t.employee.office_location }}</div>
+                                </td>
+                                <td><span class="category-pill">{{ t.category }}</span></td>
+                                <td>
+                                    <select class="priority-select" onchange="updateField({{ t.id }}, 'priority', this.value)">
+                                        {% for p in ['Low','Medium','High','Critical'] %}
+                                        <option value="{{ p }}" {% if t.priority == p %}selected{% endif %}>{{ p }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="status-select" onchange="updateField({{ t.id }}, 'status', this.value)">
+                                        {% for s in ['Pending','Assigned','In Progress','Resolved','Closed'] %}
+                                        <option value="{{ s }}" {% if t.status == s %}selected{% endif %}>{{ s }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="text-muted small">{{ t.created_at.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openTicketModal({{ t.id }}, '{{ t.ticket_id }}', '{{ t.description|replace("'","\\'")|truncate(100) }}', '{{ t.assigned_to or '' }}', '{{ t.resolution_notes or '' }}')">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Pagination -->
+            {% if tickets.pages > 1 %}
+            <div class="portal-card-footer">
+                <nav>
+                    <ul class="pagination mb-0 justify-content-end">
+                        {% if tickets.has_prev %}
+                        <li class="page-item"><a class="page-link" href="?page={{ tickets.prev_num }}&status={{ status_filter }}&search={{ search }}">Previous</a></li>
+                        {% endif %}
+                        {% for p in tickets.iter_pages() %}
+                        {% if p %}
+                        <li class="page-item {% if p == tickets.page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ p }}&status={{ status_filter }}&search={{ search }}">{{ p }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% if tickets.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ tickets.next_num }}&status={{ status_filter }}&search={{ search }}">Next</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</main>
+
+<!-- Edit Ticket Modal -->
+<div class="modal fade" id="ticketModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content portal-modal">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Update Ticket <code id="modal_ticket_id"></code></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Assign To Admin</label>
+                    <select id="modal_assign" class="form-select portal-input">
+                        <option value="">Not Assigned</option>
+                        {% for a in admins %}
+                        <option value="{{ a.id }}">{{ a.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Resolution Notes</label>
+                    <textarea id="modal_notes" class="form-control portal-input" rows="4"
+                              placeholder="Describe the resolution or action taken…"></textarea>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label">Issue Description</label>
+                    <p class="text-muted small" id="modal_description"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveModal()">
+                    <i class="bi bi-check2 me-1"></i>Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let activeTicketDbId = null;
+
+function openTicketModal(dbId, ticketId, desc, assignedTo, notes) {
+    activeTicketDbId = dbId;
+    document.getElementById('modal_ticket_id').textContent = ticketId;
+    document.getElementById('modal_description').textContent = desc;
+    document.getElementById('modal_assign').value = assignedTo;
+    document.getElementById('modal_notes').value = notes;
+    new bootstrap.Modal(document.getElementById('ticketModal')).show();
+}
+
+async function saveModal() {
+    const data = {
+        assigned_to: document.getElementById('modal_assign').value,
+        resolution_notes: document.getElementById('modal_notes').value
+    };
+    const res = await fetch(`/admin/tickets/${activeTicketDbId}/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.success) {
+        bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
+        location.reload();
+    }
+}
+
+async function updateField(dbId, field, value) {
+    const data = {};
+    data[field] = value;
+    await fetch(`/admin/tickets/${dbId}/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+}
+</script>
+{% endblock %}

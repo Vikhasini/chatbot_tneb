@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Notifications — Admin{% endblock %}
+{% block body %}
+<header class="portal-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg width="38" height="38" viewBox="0 0 56 56" fill="none">
+          <rect width="56" height="56" rx="10" fill="#004A99"/>
+          <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+        </svg>
+      </div>
+      <div class="header-brand-text">
+        <span class="header-title">Notifications</span>
+        <span class="header-sub">TNEB Digital Helpdesk — Admin</span>
+      </div>
+    </div>
+    <nav class="admin-top-nav">
+      <a href="{{ url_for('admin.dashboard') }}"         class="admin-nav-link"><i class="bi bi-grid"></i> Dashboard</a>
+      <a href="{{ url_for('admin.notifications_page') }}" class="admin-nav-link active"><i class="bi bi-bell"></i> Notifications</a>
+      <a href="{{ url_for('admin.ticket_list') }}"       class="admin-nav-link"><i class="bi bi-ticket"></i> Tickets</a>
+      <a href="{{ url_for('admin.password_requests') }}"  class="admin-nav-link"><i class="bi bi-key"></i> Password Resets</a>
+      <a href="{{ url_for('admin.email_requests') }}"    class="admin-nav-link"><i class="bi bi-envelope-plus"></i> Email Requests</a>
+      <a href="{{ url_for('admin.employees') }}"         class="admin-nav-link"><i class="bi bi-people"></i> Employees</a>
+    </nav>
+    <div class="header-actions">
+      <a href="{{ url_for('auth.logout') }}" class="header-icon-btn"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+</header>
+
+<main class="portal-main admin-main">
+  <div class="container-xl px-4 py-4" style="max-width:860px">
+
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <h4 style="font-size:20px;font-weight:800;color:#1A2B4B;margin:0">
+        <i class="bi bi-bell-fill me-2" style="color:#004A99"></i>All Notifications
+      </h4>
+      <span style="font-size:13px;color:#9AA5BE">{{ notifs.total }} total — all marked as read on page open</span>
+    </div>
+
+    {% if notifs.items %}
+      {% for n in notifs.items %}
+      <div class="notif-item notif-{{ n.type }}">
+        <div class="notif-icon">
+          {% if n.type == 'ticket_created' %}<i class="bi bi-ticket-detailed-fill"></i>
+          {% elif n.type == 'ticket_updated' %}<i class="bi bi-arrow-repeat"></i>
+          {% elif n.type == 'pwd_request' %}<i class="bi bi-key-fill"></i>
+          {% elif n.type == 'email_request' %}<i class="bi bi-envelope-plus-fill"></i>
+          {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+        </div>
+        <div class="notif-body">
+          <div class="notif-title">{{ n.title }}</div>
+          <div class="notif-msg">{{ n.message }}</div>
+          <div class="notif-meta">{{ n.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+        </div>
+        {% if n.link %}
+        <a href="{{ n.link }}" class="notif-action">View <i class="bi bi-arrow-right"></i></a>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if notifs.pages > 1 %}
+      <nav class="mt-3"><ul class="pagination justify-content-center mb-0">
+        {% if notifs.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ notifs.prev_num }}">Previous</a></li>{% endif %}
+        {% for p in notifs.iter_pages() %}{% if p %}
+        <li class="page-item {% if p==notifs.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+        {% endif %}{% endfor %}
+        {% if notifs.has_next %}<li class="page-item"><a class="page-link" href="?page={{ notifs.next_num }}">Next</a></li>{% endif %}
+      </ul></nav>
+      {% endif %}
+
+    {% else %}
+    <div style="text-align:center;padding:4rem 1rem;color:#9AA5BE">
+      <i class="bi bi-bell-slash" style="font-size:3rem;color:#E2E8F0;display:block;margin-bottom:1rem"></i>
+      <h5 style="color:#1A2B4B">No notifications yet</h5>
+      <p style="font-size:13.5px">Notifications appear here when employees raise tickets, request emails, or submit password resets.</p>
+    </div>
+    {% endif %}
+  </div>
+</main>
+
+<style>
+.notif-item{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:1rem;box-shadow:0 1px 5px rgba(0,74,153,.04)}
+.notif-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.notif-ticket_created .notif-icon{background:#EBF3FF;color:#004A99}
+.notif-ticket_updated .notif-icon{background:#FFF8E1;color:#E65100}
+.notif-pwd_request .notif-icon{background:#F3E5F5;color:#6A1B9A}
+.notif-email_request .notif-icon{background:#E8F5E9;color:#2E7D32}
+.notif-general .notif-icon{background:#F0F4FA;color:#546E7A}
+.notif-body{flex:1;min-width:0}
+.notif-title{font-size:14px;font-weight:700;color:#1A2B4B;margin-bottom:3px}
+.notif-msg{font-size:13px;color:#4A5568;line-height:1.55}
+.notif-meta{font-size:11px;color:#9AA5BE;margin-top:4px}
+.notif-action{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;color:#004A99;text-decoration:none;white-space:nowrap;padding:.3rem .7rem;border:1px solid #004A99;border-radius:20px;margin-left:.5rem;transition:background .13s}
+.notif-action:hover{background:#004A99;color:#fff}
+</style>
+{% endblock %}

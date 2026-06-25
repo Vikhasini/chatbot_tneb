@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}TNEB Digital Helpdesk & Official Email Support Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Public Home Page ─────────────────────────────────── */
+.pub-nav {
+  background: #fff; border-bottom: 1px solid #E2E8F0;
+  position: sticky; top:0; z-index:100;
+}
+.pub-nav-inner {
+  max-width:1100px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 1.5rem; height:60px;
+}
+.pub-brand { display:flex; align-items:center; gap:.75rem; text-decoration:none; }
+.pub-brand-name { font-size:15px; font-weight:800; color:#004A99; }
+.pub-brand-sub  { font-size:10.5px; color:#9AA5BE; }
+.pub-nav-links { display:flex; align-items:center; gap:.25rem; }
+.pub-nav-link {
+  padding:.4rem .85rem; border-radius:20px; font-size:13px; font-weight:500;
+  color:#1A2B4B; text-decoration:none; transition:background .13s, color .13s;
+}
+.pub-nav-link:hover { background:#F0F4FA; color:#004A99; }
+.pub-login-btn {
+  background:#004A99; color:#fff; border-radius:20px;
+  padding:.4rem 1.1rem; font-size:13px; font-weight:600;
+  text-decoration:none; transition:background .13s;
+}
+.pub-login-btn:hover { background:#003370; color:#fff; }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #004A99 0%, #0062cc 55%, #0F8B8D 100%);
+  color:#fff; padding:5rem 1.5rem 4rem; text-align:center;
+}
+.hero-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+  border-radius:20px; padding:5px 14px; font-size:12px; font-weight:600;
+  margin-bottom:1.25rem;
+}
+.hero h1 { font-size:clamp(22px,4vw,40px); font-weight:800; line-height:1.25; margin-bottom:1rem; }
+.hero p  { font-size:16px; opacity:.8; max-width:560px; margin:0 auto 2rem; }
+.hero-actions { display:flex; flex-wrap:wrap; gap:.75rem; justify-content:center; }
+.hero-btn-primary {
+  background:#D9A441; color:#1A2B4B; font-weight:700;
+  padding:.75rem 1.75rem; border-radius:12px; font-size:15px;
+  text-decoration:none; display:inline-flex; align-items:center; gap:.5rem;
+  transition:background .13s, transform .1s;
+}
+.hero-btn-primary:hover { background:#c4922e; color:#1A2B4B; transform:translateY(-2px); }
+.hero-btn-outline {
+  background:rgba(255,255,255,.12); color:#fff; font-weight:600;
+  padding:.75rem 1.75rem; border-radius:12px; font-size:15px; border:1.5px solid rgba(255,255,255,.4);
+  text-decoration:none; display:inline-flex; align-items:center; gap:.5rem;
+  transition:background .13s;
+}
+.hero-btn-outline:hover { background:rgba(255,255,255,.22); color:#fff; }
+
+/* Services */
+.services-section { background:#F8F9FB; padding:4rem 1.5rem; }
+.section-label { font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#0F8B8D; margin-bottom:.4rem; }
+.section-title { font-size:clamp(20px,3vw,30px); font-weight:800; color:#1A2B4B; margin-bottom:.5rem; }
+.section-sub   { font-size:14px; color:#6B7A99; margin-bottom:2.5rem; }
+.services-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:1.25rem; }
+.svc-card {
+  background:#fff; border:1px solid #E2E8F0; border-radius:16px;
+  padding:1.5rem 1.25rem; text-decoration:none; color:#1A2B4B;
+  box-shadow:0 1px 6px rgba(0,74,153,.05);
+  display:flex; flex-direction:column; gap:.75rem;
+  transition:transform .15s, box-shadow .15s, border-color .15s;
+}
+.svc-card:hover { transform:translateY(-3px); box-shadow:0 6px 24px rgba(0,74,153,.10); border-color:#004A99; color:#1A2B4B; }
+.svc-icon {
+  width:50px; height:50px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.svc-title { font-size:15px; font-weight:700; }
+.svc-desc  { font-size:13px; color:#6B7A99; line-height:1.55; flex-grow:1; }
+.svc-link  { font-size:12.5px; font-weight:600; color:#004A99; display:flex; align-items:center; gap:4px; }
+
+/* Stats */
+.stats-bar {
+  background:#004A99; padding:3rem 1.5rem;
+}
+.stats-inner { max-width:900px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:2rem; text-align:center; }
+.stat-num { font-size:38px; font-weight:800; color:#D9A441; }
+.stat-lbl { font-size:13px; color:rgba(255,255,255,.75); margin-top:4px; }
+
+/* Footer */
+.pub-footer { background:#1A2B4B; color:rgba(255,255,255,.6); padding:2rem 1.5rem; }
+.pub-footer-inner { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem; font-size:12.5px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Nav -->
+<nav class="pub-nav">
+  <div class="pub-nav-inner">
+    <a href="{{ url_for('public.home') }}" class="pub-brand">
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="10" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div>
+        <div class="pub-brand-name">TNEB Digital Helpdesk</div>
+        <div class="pub-brand-sub">Tamil Nadu Electricity Board</div>
+      </div>
+    </a>
+    <div class="pub-nav-links">
+      <a href="{{ url_for('public.helpdesk') }}" class="pub-nav-link"><i class="bi bi-chat-dots me-1"></i>Helpdesk</a>
+      <a href="{{ url_for('public.track') }}"    class="pub-nav-link"><i class="bi bi-ticket me-1"></i>Track Ticket</a>
+      <a href="{{ url_for('public.faq') }}"      class="pub-nav-link"><i class="bi bi-question-circle me-1"></i>FAQ</a>
+      <a href="{{ url_for('auth.login') }}"      class="pub-login-btn ms-2"><i class="bi bi-person me-1"></i>Employee Login</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-tag"><i class="bi bi-shield-check"></i> Government of Tamil Nadu — Official Portal</div>
+  <h1>TNEB Digital Helpdesk &<br>Official Email Support Portal</h1>
+  <p>One platform for all TNEB email service needs — available to employees and the public, no login required.</p>
+  <div class="hero-actions">
+    <a href="{{ url_for('public.helpdesk') }}" class="hero-btn-primary">
+      <i class="bi bi-chat-dots-fill"></i> Chat with Support Bot
+    </a>
+    <a href="{{ url_for('public.track') }}" class="hero-btn-outline">
+      <i class="bi bi-ticket-detailed"></i> Track Existing Ticket
+    </a>
+  </div>
+</section>
+
+<!-- Services -->
+<section class="services-section">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label">Public Services</div>
+    <div class="section-title">What Can We Help You With?</div>
+    <div class="section-sub">All services below are available without logging in.</div>
+    <div class="services-grid">
+      <a href="{{ url_for('public.helpdesk') }}" class="svc-card">
+        <div class="svc-icon" style="background:#EBF3FF;color:#004A99"><i class="bi bi-robot"></i></div>
+        <div class="svc-title">Chat Support Bot</div>
+        <div class="svc-desc">Ask questions, report issues, get instant answers — available 24×7.</div>
+        <div class="svc-link">Start Chat <i class="bi bi-arrow-right"></i></div>
+      </a>
+      <a href="{{ url_for('public.track') }}" class="svc-card">
+        <div class="svc-icon" style="background:#E8F5E9;color:#2E7D32"><i class="bi bi-ticket-detailed-fill"></i></div>
+        <div class="svc-title">Track Ticket Status</div>
+        <div class="svc-desc">Enter your ticket number and view real-time status and admin responses.</div>
+        <div class="svc-link">Track Now <i class="bi bi-arrow-right"></i></div>
+      </a>
+      <a href="{{ url_for('public.request_email') }}" class="svc-card">
+        <div class="svc-icon" style="background:#F3E5F5;color:#6A1B9A"><i class="bi bi-envelope-plus-fill"></i></div>
+        <div class="svc-title">Request Official Email</div>
+        <div class="svc-desc">New employees can request an official TNEB email address to be created.</div>
+        <div class="svc-link">Request Email <i class="bi bi-arrow-right"></i></div>
+      </a>
+      <a href="{{ url_for('public.forgot_password') }}" class="svc-card">
+        <div class="svc-icon" style="background:#FFF3E0;color:#E65100"><i class="bi bi-key-fill"></i></div>
+        <div class="svc-title">Forgot Password</div>
+        <div class="svc-desc">Lost access to your TNEB email? Submit a reset request for admin approval.</div>
+        <div class="svc-link">Reset Password <i class="bi bi-arrow-right"></i></div>
+      </a>
+      <a href="{{ url_for('public.faq') }}" class="svc-card">
+        <div class="svc-icon" style="background:#E0F7FA;color:#00838F"><i class="bi bi-question-circle-fill"></i></div>
+        <div class="svc-title">Frequently Asked Questions</div>
+        <div class="svc-desc">Find answers to common questions about TNEB email services and policies.</div>
+        <div class="svc-link">View FAQs <i class="bi bi-arrow-right"></i></div>
+      </a>
+      <a href="{{ url_for('auth.login') }}" class="svc-card">
+        <div class="svc-icon" style="background:#FCE4EC;color:#C62828"><i class="bi bi-person-badge-fill"></i></div>
+        <div class="svc-title">Employee Login</div>
+        <div class="svc-desc">TNEB employees can log in to raise tickets, view dashboard, and access full support.</div>
+        <div class="svc-link">Employee Login <i class="bi bi-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats-bar">
+  <div class="stats-inner">
+    <div><div class="stat-num">50+</div><div class="stat-lbl">Employees Served</div></div>
+    <div><div class="stat-num">100+</div><div class="stat-lbl">Tickets Resolved</div></div>
+    <div><div class="stat-num">10</div><div class="stat-lbl">Admin Staff</div></div>
+    <div><div class="stat-num">24×7</div><div class="stat-lbl">Bot Availability</div></div>
+    <div><div class="stat-num">&lt;4hr</div><div class="stat-lbl">Avg Response Time</div></div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="pub-footer">
+  <div class="pub-footer-inner">
+    <span>© 2025 Tamil Nadu Electricity Board — TNEB Digital Helpdesk Portal</span>
+    <span>IT Helpdesk: <strong style="color:#fff">044-2345-6789</strong> | helpdesk@tneb.in | Mon–Fri 9AM–6PM</span>
+  </div>
+</footer>
+{% endblock %}

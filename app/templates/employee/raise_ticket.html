@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Raise Ticket — TNEB Portal{% endblock %}
+{% block extra_css %}
+<style>
+.dash-header{background:#fff;border-bottom:1px solid #E2E8F0;position:sticky;top:0;z-index:100}
+.dash-header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:60px}
+.dash-brand{display:flex;align-items:center;gap:.75rem}
+.dash-brand-name{font-size:15px;font-weight:700;color:#004A99}
+.dash-brand-sub{font-size:11px;color:#9AA5BE}
+.rt-page{min-height:calc(100vh - 60px);background:#F8F9FB;padding:2.5rem 1.5rem 4rem}
+.rt-inner{max-width:680px;margin:0 auto}
+.rt-card{background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 2px 12px rgba(0,74,153,.06);padding:2rem}
+.rt-title{font-size:20px;font-weight:800;color:#1A2B4B;margin-bottom:.35rem}
+.rt-sub{font-size:13.5px;color:#6B7A99;margin-bottom:1.75rem}
+.flabel{font-size:13px;font-weight:600;color:#1A2B4B;margin-bottom:5px}
+.finput{width:100%;border:1.5px solid #E2E8F0;border-radius:10px;padding:.6rem .9rem;font-size:14px;color:#1A2B4B;outline:none;transition:border-color .15s}
+.finput:focus{border-color:#004A99;box-shadow:0 0 0 3px rgba(0,74,153,.09)}
+.priority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.pri-option{display:none}
+.pri-label{display:flex;flex-direction:column;align-items:center;gap:4px;padding:.6rem .5rem;border:1.5px solid #E2E8F0;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;transition:border-color .13s,background .13s;text-align:center}
+.pri-option:checked + .pri-label{border-color:#004A99;background:#EBF3FF;color:#004A99}
+.pri-label.low{color:#2E7D32}.pri-label.medium{color:#E65100}.pri-label.high{color:#C62828}.pri-label.critical{color:#4A148C}
+.submit-btn{background:#004A99;color:#fff;border:none;border-radius:10px;padding:.7rem 2rem;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;transition:background .14s}
+.submit-btn:hover{background:#003370}
+.cancel-link{color:#6B7A99;text-decoration:none;font-size:14px;padding:.65rem 1.5rem;border:1.5px solid #E2E8F0;border-radius:10px;display:inline-flex;align-items:center;gap:.5rem;transition:border-color .14s,color .14s}
+.cancel-link:hover{border-color:#004A99;color:#004A99}
+</style>
+{% endblock %}
+{% block body %}
+<header class="dash-header">
+  <div class="dash-header-inner">
+    <div class="dash-brand">
+      <a href="{{ url_for('employee.dashboard') }}" style="display:flex;align-items:center;gap:.5rem;text-decoration:none;color:#6B7A99;font-size:14px;margin-right:.5rem">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="10" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div><div class="dash-brand-name">Raise Support Ticket</div><div class="dash-brand-sub">TNEB Digital Helpdesk</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <a href="{{ url_for('auth.logout') }}" style="color:#6B7A99;font-size:20px;text-decoration:none"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div style="max-width:680px;margin:1rem auto;padding:0 1.5rem">
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ 'danger' if cat=='danger' else 'success' }} alert-dismissible py-2">
+      {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<div class="rt-page">
+  <div class="rt-inner">
+    <div class="rt-card">
+      <div class="rt-title"><i class="bi bi-ticket-detailed-fill me-2" style="color:#004A99"></i>New Support Ticket</div>
+      <div class="rt-sub">Describe your email issue and our team will respond within 2–4 working hours.</div>
+
+      <form method="POST" action="{{ url_for('employee.raise_ticket') }}">
+        <div class="mb-3">
+          <div class="flabel">Issue Category <span style="color:#C62828">*</span></div>
+          <select name="category" class="finput" required>
+            <option value="">— Select category —</option>
+            {% for c in ['Mail Not Received','Unable To Send Email','Login Failure','Account Locked','Spam / Phishing','Storage / Quota Issue','Configuration Issue','Other'] %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <div class="flabel">Subject <span style="color:#C62828">*</span></div>
+          <input type="text" name="subject" class="finput"
+                 placeholder="Brief description of the issue" maxlength="200" required>
+        </div>
+
+        <div class="mb-3">
+          <div class="flabel">Description <span style="color:#C62828">*</span></div>
+          <textarea name="description" class="finput" rows="5" required
+                    placeholder="Describe the issue in detail. Include: when it started, error messages you see, steps you've already tried…"
+                    style="resize:vertical"></textarea>
+        </div>
+
+        <div class="mb-4">
+          <div class="flabel">Priority</div>
+          <div class="priority-grid">
+            <div>
+              <input type="radio" name="priority" value="Low" id="pri_low" class="pri-option">
+              <label for="pri_low" class="pri-label low"><i class="bi bi-arrow-down-circle"></i>Low</label>
+            </div>
+            <div>
+              <input type="radio" name="priority" value="Medium" id="pri_med" class="pri-option" checked>
+              <label for="pri_med" class="pri-label medium"><i class="bi bi-dash-circle"></i>Medium</label>
+            </div>
+            <div>
+              <input type="radio" name="priority" value="High" id="pri_high" class="pri-option">
+              <label for="pri_high" class="pri-label high"><i class="bi bi-arrow-up-circle"></i>High</label>
+            </div>
+            <div>
+              <input type="radio" name="priority" value="Critical" id="pri_crit" class="pri-option">
+              <label for="pri_crit" class="pri-label critical"><i class="bi bi-exclamation-octagon"></i>Critical</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 flex-wrap">
+          <button type="submit" class="submit-btn"><i class="bi bi-send-fill"></i> Submit Ticket</button>
+          <a href="{{ url_for('employee.dashboard') }}" class="cancel-link"><i class="bi bi-x"></i> Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+{% block title %}Support Assistant — TNEB Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Chat page full-height layout ───────────────────────── */
+html, body { height: 100%; }
+
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F8F9FB;
+}
+
+/* Header */
+.chat-header {
+  background: #fff;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+  z-index: 50;
+}
+.chat-header-inner {
+  max-width: 800px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.25rem; height: 58px;
+}
+.chat-header-brand { display: flex; align-items: center; gap: .65rem; }
+.chat-header-brand-text .title { font-size: 14.5px; font-weight: 700; color: #004A99; }
+.chat-header-brand-text .sub   { font-size: 11px; color: #9AA5BE; }
+.chat-header-right { display: flex; align-items: center; gap: .5rem; }
+.bot-online {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: #2E7D32;
+  background: #E8F5E9; border-radius: 20px; padding: 4px 12px;
+}
+.bot-pip { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pip 1.4s infinite; }
+@keyframes pip { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: none; border: none; cursor: pointer;
+  color: #6B7A99; font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; transition: background .14s, color .14s;
+}
+.icon-btn:hover { background: #F0F4FA; color: #004A99; }
+
+/* Scrollable messages area */
+.chat-body {
+  flex: 1; overflow-y: auto;
+  padding: 2rem 1.25rem 1rem;
+  display: flex; flex-direction: column;
+}
+.chat-body-inner {
+  max-width: 800px; width: 100%; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 1.1rem;
+  flex: 1;
+}
+
+/* Empty / welcome state */
+.welcome-state {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 1.5rem;
+  padding: 2rem 1rem;
+}
+.welcome-state.hidden { display: none; }
+
+.ws-avatar {
+  width: 72px; height: 72px; border-radius: 20px;
+  background: linear-gradient(135deg, #004A99, #0F8B8D);
+  color: #fff; font-size: 30px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(0,74,153,0.22);
+}
+.ws-title { font-size: 22px; font-weight: 800; color: #1A2B4B; margin: 0; }
+.ws-sub   { font-size: 14px; color: #6B7A99; margin: 0; max-width: 380px; }
+
+.ws-chips { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; margin-top: .5rem; }
+.ws-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: .55rem 1.1rem;
+  background: #fff; border: 1.5px solid #E2E8F0;
+  border-radius: 24px; font-size: 13.5px; font-weight: 500;
+  color: #1A2B4B; cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.04);
+  transition: border-color .14s, color .14s, box-shadow .14s;
+}
+.ws-chip i { color: #6B7A99; font-size: 15px; }
+.ws-chip:hover { border-color: #004A99; color: #004A99; box-shadow: 0 3px 10px rgba(0,74,153,0.1); }
+.ws-chip:hover i { color: #004A99; }
+
+/* Messages */
+.msg-row { display: flex; gap: .75rem; align-items: flex-end; }
+.msg-row.user { flex-direction: row-reverse; }
+
+.msg-avatar {
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%;
+  background: #004A99; color: #fff; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 2px;
+}
+.msg-avatar.user-av { background: #0F8B8D; }
+
+.bubble {
+  max-width: min(72%, 560px);
+  padding: .75rem 1rem;
+  border-radius: 18px;
+  font-size: 14px; line-height: 1.65;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.bubble.bot {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-bottom-left-radius: 4px;
+  color: #1A2B4B;
+}
+.bubble.user {
+  background: #004A99;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.bubble-time {
+  font-size: 10.5px; margin-top: 5px;
+  color: #9AA5BE; text-align: right;
+}
+.bubble.user .bubble-time { color: rgba(255,255,255,.55); }
+
+/* Email result card inside bubble */
+.email-result-card {
+  background: #F8F9FB; border: 1px solid #E2E8F0;
+  border-radius: 10px; padding: .65rem .9rem;
+  margin-bottom: .5rem; font-size: 13px; line-height: 1.7;
+}
+.email-result-card:last-child { margin-bottom: 0; }
+
+/* Quick replies */
+.qr-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .65rem; }
+.qr-btn {
+  display: inline-flex; align-items: center;
+  padding: 5px 13px;
+  background: #F0F4FA; border: 1.5px solid #004A99;
+  color: #004A99; border-radius: 20px;
+  font-size: 12.5px; font-weight: 500; cursor: pointer;
+  transition: background .13s, color .13s;
+}
+.qr-btn:hover { background: #004A99; color: #fff; }
+.qr-btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+
+/* Badge in bot message */
+.badge-pending {
+  display: inline-block; background: #FFF3E0; color: #E65100;
+  border-radius: 20px; padding: 1px 8px; font-size: 11px; font-weight: 600;
+}
+
+/* Typing */
+.typing-row { display: flex; gap: .75rem; align-items: flex-end; }
+.typing-bubble {
+  background: #fff; border: 1px solid #E2E8F0;
+  border-radius: 18px; border-bottom-left-radius: 4px;
+  padding: .6rem .9rem;
+  display: flex; align-items: center; gap: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.typing-bubble span {
+  width: 7px; height: 7px; border-radius: 50%; background: #9AA5BE;
+  animation: bounce .9s infinite;
+  display: inline-block;
+}
+.typing-bubble span:nth-child(2) { animation-delay: .15s; }
+.typing-bubble span:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+/* Input bar */
+.chat-input-bar {
+  flex-shrink: 0;
+  background: #fff; border-top: 1px solid #E2E8F0;
+  padding: .9rem 1.25rem 1rem;
+}
+.chat-input-bar-inner {
+  max-width: 800px; margin: 0 auto;
+}
+.chat-input-wrap {
+  display: flex; align-items: center; gap: .6rem;
+  background: #F8F9FB; border: 1.5px solid #E2E8F0;
+  border-radius: 14px; padding: .45rem .5rem .45rem .9rem;
+  transition: border-color .15s, box-shadow .15s;
+}
+.chat-input-wrap:focus-within {
+  border-color: #004A99; box-shadow: 0 0 0 3px rgba(0,74,153,.09);
+}
+.chat-input-wrap input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 14px; color: #1A2B4B; padding: .25rem 0;
+}
+.chat-input-wrap input::placeholder { color: #9AA5BE; }
+.send-btn {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: #004A99; border: none; color: #fff; font-size: 15px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .14s, transform .1s;
+}
+.send-btn:hover { background: #003370; transform: scale(1.06); }
+.chat-input-hint {
+  font-size: 11px; color: #9AA5BE; margin-top: .4rem; text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="chat-page">
+
+  <!-- Header -->
+  <header class="chat-header">
+    <div class="chat-header-inner">
+      <div class="chat-header-brand">
+        <a href="{{ url_for('employee.dashboard') }}" class="icon-btn" title="Back to Dashboard">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <svg width="32" height="32" viewBox="0 0 56 56" fill="none">
+          <rect width="56" height="56" rx="10" fill="#004A99"/>
+          <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+        </svg>
+        <div class="chat-header-brand-text">
+          <div class="title">Support Assistant</div>
+          <div class="sub">TNEB Email Helpdesk</div>
+        </div>
+      </div>
+      <div class="chat-header-right">
+        <div class="bot-online"><span class="bot-pip"></span> Online</div>
+        <a href="{{ url_for('auth.logout') }}" class="icon-btn" title="Logout">
+          <i class="bi bi-box-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <div class="chat-body" id="chatBody">
+    <div class="chat-body-inner" id="chatInner">
+
+      <!-- Welcome state (hidden once chat starts) -->
+      <div class="welcome-state" id="welcomeState">
+        <div class="ws-avatar"><i class="bi bi-robot"></i></div>
+        <div>
+          <p class="ws-title">How can I help you?</p>
+          <p class="ws-sub">Ask me anything about TNEB email services — I'm here to help.</p>
+        </div>
+        <div class="ws-chips">
+          <button class="ws-chip" onclick="sendQuick('Search Official Email')">
+            <i class="bi bi-search"></i> Search Official Email
+          </button>
+          <button class="ws-chip" onclick="sendQuick('Forgot Password')">
+            <i class="bi bi-key"></i> Forgot Password
+          </button>
+          <button class="ws-chip" onclick="sendQuick('Report Email Issue')">
+            <i class="bi bi-exclamation-triangle"></i> Report Issue
+          </button>
+          <button class="ws-chip" onclick="sendQuick('Track Ticket')">
+            <i class="bi bi-ticket-detailed"></i> Track Ticket
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Typing indicator (outside chatInner, inside chatBody) -->
+  <div class="chat-input-bar">
+    <div class="chat-input-bar-inner">
+      <!-- Typing row shown above input -->
+      <div class="typing-row mb-2" id="typingRow" style="display:none">
+        <div class="msg-avatar"><i class="bi bi-robot"></i></div>
+        <div class="typing-bubble">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="chat-input-wrap">
+        <input type="text" id="chatInput"
+               placeholder="Type a message or question…"
+               onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="send-btn" onclick="sendMessage()" title="Send">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+      <div class="chat-input-hint">
+        Try: "AE Madurai email" · "Reset my password" · "Track TKT1025"
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let sessionData = {};
+let chatStarted = false;
+
+function nowTime() {
+  return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function hideWelcome() {
+  if (!chatStarted) {
+    document.getElementById('welcomeState').classList.add('hidden');
+    chatStarted = true;
+  }
+}
+
+function appendUser(text) {
+  hideWelcome();
+  const inner = document.getElementById('chatInner');
+  const div = document.createElement('div');
+  div.className = 'msg-row user';
+  div.innerHTML = `
+    <div class="bubble user">
+      <div>${escHtml(text)}</div>
+      <div class="bubble-time">${nowTime()}</div>
+    </div>
+    <div class="msg-avatar user-av"><i class="bi bi-person-fill"></i></div>`;
+  inner.appendChild(div);
+  scrollBottom();
+}
+
+function appendBot(text, quickReplies = [], ticketCreated = null) {
+  hideWelcome();
+  const inner = document.getElementById('chatInner');
+  const div = document.createElement('div');
+  div.className = 'msg-row';
+
+  let qrHTML = '';
+  if (quickReplies.length) {
+    qrHTML = `<div class="qr-row">${
+      quickReplies.map(r =>
+        `<button class="qr-btn" onclick="sendQuick('${r.replace(/'/g,"\\'")}')">` + escHtml(r) + `</button>`
+      ).join('')
+    }</div>`;
+  }
+
+  let tktHTML = '';
+  if (ticketCreated) {
+    tktHTML = `<div class="mt-2">
+      <a href="/tickets/track?id=${ticketCreated.id}"
+         style="display:inline-flex;align-items:center;gap:6px;padding:5px 13px;background:#EBF3FF;color:#004A99;border-radius:20px;font-size:12.5px;font-weight:600;text-decoration:none">
+        <i class="bi bi-search"></i> Track ${ticketCreated.id}
+      </a></div>`;
+  }
+
+  div.innerHTML = `
+    <div class="msg-avatar"><i class="bi bi-robot"></i></div>
+    <div class="bubble bot">
+      <div>${text}</div>
+      ${qrHTML}
+      ${tktHTML}
+      <div class="bubble-time">${nowTime()}</div>
+    </div>`;
+  inner.appendChild(div);
+
+  // disable older quick-reply buttons
+  const allQR = inner.querySelectorAll('.qr-btn');
+  const thisQR = div.querySelectorAll('.qr-btn');
+  allQR.forEach(b => {
+    let isThis = false;
+    thisQR.forEach(t => { if (t === b) isThis = true; });
+    if (!isThis) b.disabled = true;
+  });
+
+  scrollBottom();
+}
+
+function scrollBottom() {
+  const body = document.getElementById('chatBody');
+  body.scrollTop = body.scrollHeight;
+}
+
+function showTyping() {
+  document.getElementById('typingRow').style.display = 'flex';
+  scrollBottom();
+}
+function hideTyping() {
+  document.getElementById('typingRow').style.display = 'none';
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  appendUser(text);
+  showTyping();
+
+  // Home shortcut
+  const lower = text.toLowerCase();
+  if (lower === 'go to home' || lower === 'home') {
+    setTimeout(() => {
+      hideTyping();
+      appendBot(
+        "You're back at the main menu! What can I help you with?",
+        ['Search Official Email','Forgot Password','Report Email Issue','Track Ticket']
+      );
+      sessionData = {};
+    }, 500);
+    return;
+  }
+
+  if (lower === 'report email issue' || lower === 'report an issue' || lower === 'report another issue') {
+    setTimeout(() => {
+      hideTyping();
+      appendBot(
+        `<strong>Report Email Issue</strong><br><br>Please select the type of issue:<br><br>
+         1️⃣ Mail Not Received<br>2️⃣ Unable To Send Email<br>3️⃣ Login Failure<br>4️⃣ Account Locked`,
+        ['Mail Not Received','Unable To Send Email','Login Failure','Account Locked']
+      );
+      sessionData = { state: 'collect_issue_category' };
+    }, 500);
+    return;
+  }
+
+  try {
+    const res = await fetch('/chatbot/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, session_data: sessionData })
+    });
+    const data = await res.json();
+    const delay = Math.min(Math.max(data.text.length * 7, 500), 1600);
+    setTimeout(() => {
+      hideTyping();
+      appendBot(data.text, data.quick_replies || [], data.ticket_created);
+      sessionData = data.session_data || {};
+    }, delay);
+  } catch {
+    hideTyping();
+    appendBot('⚠️ Connection error. Please try again.', ['Retry']);
+  }
+}
+
+function sendQuick(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+// Auto-trigger from dashboard chip links (?intent=...)
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(window.location.search);
+  const intent = p.get('intent');
+  const map = {
+    search_email:    'Search Official Email',
+    forgot_password: 'Forgot Password',
+    report_issue:    'Report Email Issue',
+  };
+  if (map[intent]) {
+    setTimeout(() => sendQuick(map[intent]), 400);
+  }
+});
+</script>
+{% endblock %}

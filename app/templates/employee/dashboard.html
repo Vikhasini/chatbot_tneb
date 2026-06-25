@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — TNEB Email Support{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Dashboard-specific overrides ───────────────────────── */
+.dash-header {
+  background: #fff;
+  border-bottom: 1px solid #E2E8F0;
+  position: sticky; top: 0; z-index: 100;
+}
+.dash-header-inner {
+  max-width: 960px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; height: 60px;
+}
+.dash-brand { display: flex; align-items: center; gap: .75rem; }
+.dash-brand-name { font-size: 15px; font-weight: 700; color: #004A99; }
+.dash-brand-sub  { font-size: 11px; color: #6B7A99; }
+.dash-body { background: #F8F9FB; min-height: calc(100vh - 60px); padding: 2.5rem 1.5rem 4rem; }
+.dash-inner { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
+
+/* Welcome */
+.welcome-block {
+  background: linear-gradient(135deg, #004A99 0%, #0060c7 55%, #0F8B8D 100%);
+  border-radius: 18px;
+  padding: 2rem 2.25rem;
+  color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 6px 24px rgba(0,74,153,0.18);
+  gap: 1rem;
+}
+.welcome-block .greeting { font-size: 13px; opacity: .7; margin-bottom: 3px; }
+.welcome-block .name     { font-size: 24px; font-weight: 800; line-height: 1.2; }
+.welcome-block .meta     { font-size: 13px; opacity: .75; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 0 .75rem; }
+.welcome-block .meta span { display: flex; align-items: center; gap: 4px; }
+.active-pill {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 24px; padding: 6px 16px;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.active-pip { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
+
+/* Launch card */
+.launch-card {
+  background: #fff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 2rem 2.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0,74,153,0.06);
+  gap: 1.5rem;
+  transition: box-shadow .18s, border-color .18s;
+}
+.launch-card:hover { box-shadow: 0 6px 28px rgba(0,74,153,0.12); border-color: #004A99; }
+.launch-icon {
+  width: 60px; height: 60px; flex-shrink: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #004A99, #0F8B8D);
+  color: #fff; font-size: 26px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,74,153,0.25);
+}
+.launch-text .title { font-size: 18px; font-weight: 700; color: #1A2B4B; }
+.launch-text .sub   { font-size: 13.5px; color: #6B7A99; margin-top: 4px; }
+.launch-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #004A99; color: #fff;
+  border: none; border-radius: 12px;
+  padding: .7rem 1.5rem; font-size: 14px; font-weight: 600;
+  cursor: pointer; text-decoration: none; flex-shrink: 0;
+  transition: background .15s, transform .1s;
+}
+.launch-btn:hover { background: #003370; color: #fff; transform: translateY(-1px); }
+
+/* Quick chips row */
+.chips-row { display: flex; gap: .6rem; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: .45rem 1rem;
+  background: #fff; border: 1.5px solid #E2E8F0;
+  border-radius: 24px; font-size: 13px; font-weight: 500;
+  color: #1A2B4B; text-decoration: none; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: border-color .14s, color .14s, box-shadow .14s;
+}
+.chip i { color: #6B7A99; font-size: 14px; }
+.chip:hover { border-color: #004A99; color: #004A99; box-shadow: 0 2px 8px rgba(0,74,153,0.1); }
+.chip:hover i { color: #004A99; }
+
+/* Two-col row */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media(max-width:680px){ .two-col { grid-template-columns: 1fr; } }
+
+/* Info card */
+.info-card {
+  background: #fff; border: 1px solid #E2E8F0; border-radius: 14px;
+  box-shadow: 0 1px 6px rgba(0,74,153,0.05); overflow: hidden;
+}
+.info-card-hd {
+  padding: .8rem 1.25rem; border-bottom: 1px solid #F0F4FA;
+  font-size: 13px; font-weight: 700; color: #1A2B4B;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.info-card-hd i { color: #6B7A99; }
+.info-card-body { padding: 1rem 1.25rem; }
+.info-card-link {
+  font-size: 12px; color: #004A99; text-decoration: none; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px; border: 1px solid #004A99;
+  transition: background .13s;
+}
+.info-card-link:hover { background: #004A99; color: #fff; }
+
+/* Ticket rows */
+.tkt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .6rem 0; border-bottom: 1px solid #F0F4FA; gap: 1rem;
+}
+.tkt-row:last-child { border-bottom: none; }
+.tkt-id   { font-size: 11.5px; font-family: monospace; background: #F0F4FA; padding: 2px 7px; border-radius: 5px; }
+.tkt-cat  { font-size: 12.5px; color: #1A2B4B; font-weight: 500; margin-top: 2px; }
+.tkt-date { font-size: 11px; color: #9AA5BE; margin-top: 1px; }
+.tkt-right { text-align: right; }
+
+/* Announcement rows */
+.ann-row {
+  padding: .7rem 0; border-bottom: 1px solid #F0F4FA;
+  display: flex; gap: .85rem; align-items: flex-start;
+}
+.ann-row:last-child { border-bottom: none; }
+.ann-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.ann-dot-info    { background: #004A99; }
+.ann-dot-warning { background: #D9A441; }
+.ann-dot-success { background: #2E7D32; }
+.ann-title { font-size: 13px; font-weight: 600; color: #1A2B4B; }
+.ann-date  { font-size: 11px; color: #9AA5BE; margin-bottom: 2px; }
+.ann-body  { font-size: 12.5px; color: #4A5568; line-height: 1.55; margin-top: 2px; }
+
+/* Status badges */
+.sbadge {
+  display: inline-block; padding: 2px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+.sbadge-pending     { background: #FFF3E0; color: #E65100; }
+.sbadge-assigned    { background: #E3F2FD; color: #1565C0; }
+.sbadge-in-progress { background: #FFF8E1; color: #F57F17; }
+.sbadge-resolved    { background: #E8F5E9; color: #2E7D32; }
+.sbadge-closed      { background: #ECEFF1; color: #546E7A; }
+
+/* Empty */
+.empty-sm { text-align: center; padding: 2rem 1rem; color: #9AA5BE; }
+.empty-sm i { font-size: 2.2rem; display: block; margin-bottom: .5rem; }
+.empty-sm a { color: #004A99; font-size: 13px; }
+
+/* Footer */
+.dash-footer {
+  border-top: 1px solid #E2E8F0; background: #fff;
+  padding: .7rem 1.5rem;
+}
+.dash-footer-inner {
+  max-width: 960px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #9AA5BE; flex-wrap: wrap; gap: .5rem;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- ── Header ───────────────────────────────────────────────── -->
+<header class="dash-header">
+  <div class="dash-header-inner">
+    <div class="dash-brand">
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="10" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div>
+        <div class="dash-brand-name">TNEB Email Support</div>
+        <div class="dash-brand-sub">Tamil Nadu Electricity Board</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <div class="dropdown">
+        <button class="header-profile-btn dropdown-toggle" data-bs-toggle="dropdown"
+                style="padding:.3rem .6rem;border-radius:10px;gap:.6rem">
+          <div class="avatar-circle" style="width:32px;height:32px;font-size:13px;border-radius:50%;background:#004A99;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">
+            {{ current_user.username[0].upper() }}
+          </div>
+          <span class="d-none d-sm-inline" style="font-size:13.5px;font-weight:500;color:#1A2B4B">
+            {{ employee.name.split()[0] if employee else current_user.username }}
+          </span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end portal-dropdown" style="min-width:200px">
+          <li class="dropdown-header">
+            <strong>{{ employee.name if employee else current_user.username }}</strong>
+            {% if employee %}<small>{{ employee.designation }}</small>{% endif %}
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="{{ url_for('tickets.track') }}">
+            <i class="bi bi-ticket me-2 text-muted"></i>My Tickets</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+            <i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Body ────────────────────────────────────────────────── -->
+<div class="dash-body">
+  <div class="dash-inner">
+
+    <!-- Welcome -->
+    <div class="welcome-block">
+      <div>
+        <div class="greeting">Good day,</div>
+        <div class="name">{{ employee.name if employee else current_user.username }}</div>
+        {% if employee %}
+        <div class="meta">
+          <span><i class="bi bi-briefcase"></i>{{ employee.designation }}</span>
+          <span><i class="bi bi-geo-alt"></i>{{ employee.office_location }}</span>
+          <span><i class="bi bi-building"></i>{{ employee.department }}</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="active-pill">
+        <span class="active-pip"></span> Active Employee
+      </div>
+    </div>
+
+    <!-- Launch Support Assistant -->
+    <div class="launch-card">
+      <div class="launch-icon"><i class="bi bi-chat-dots-fill"></i></div>
+      <div class="launch-text">
+        <div class="title">Support Assistant</div>
+        <div class="sub">Search emails, reset password, report issues, track tickets — all in one place.</div>
+      </div>
+      <a href="{{ url_for('chatbot.support') }}" class="launch-btn">
+        <i class="bi bi-arrow-right-circle-fill"></i> Launch
+      </a>
+    </div>
+
+    <!-- Quick-action chips -->
+    <div class="chips-row">
+      <a class="chip" href="{{ url_for('chatbot.support') }}?intent=search_email">
+        <i class="bi bi-search"></i> Search Official Email
+      </a>
+      <a class="chip" href="{{ url_for('chatbot.support') }}?intent=forgot_password">
+        <i class="bi bi-key"></i> Forgot Password
+      </a>
+      <a class="chip" href="{{ url_for('chatbot.support') }}?intent=report_issue">
+        <i class="bi bi-exclamation-triangle"></i> Report Issue
+      </a>
+      <a class="chip" href="{{ url_for('tickets.track') }}">
+        <i class="bi bi-ticket-detailed"></i> Track Ticket
+      </a>
+    </div>
+
+    <!-- Recent tickets + Announcements -->
+    <div class="two-col">
+
+      <!-- Recent Tickets -->
+      <div class="info-card">
+        <div class="info-card-hd">
+          <span><i class="bi bi-clock-history me-2"></i>Recent Tickets</span>
+          <a href="{{ url_for('tickets.track') }}" class="info-card-link">View All</a>
+        </div>
+        <div class="info-card-body">
+          {% if recent_tickets %}
+            {% for t in recent_tickets %}
+            <div class="tkt-row">
+              <div>
+                <div class="tkt-id">{{ t.ticket_id }}</div>
+                <div class="tkt-cat">{{ t.category }}</div>
+                <div class="tkt-date">{{ t.created_at.strftime('%d %b %Y') }}</div>
+              </div>
+              <div class="tkt-right">
+                {% set sc = t.status.lower().replace(' ','-') %}
+                <span class="sbadge sbadge-{{ sc }}">{{ t.status }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-sm">
+              <i class="bi bi-inbox"></i>
+              <p>No tickets yet.<br><a href="{{ url_for('chatbot.support') }}">Report an issue →</a></p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Announcements -->
+      <div class="info-card">
+        <div class="info-card-hd">
+          <span><i class="bi bi-megaphone me-2"></i>Announcements</span>
+          <span style="font-size:11px;background:#EBF3FF;color:#004A99;padding:2px 8px;border-radius:20px;font-weight:600">
+            {{ announcements|length }} new
+          </span>
+        </div>
+        <div class="info-card-body">
+          {% for ann in announcements %}
+          <div class="ann-row">
+            <div class="ann-dot ann-dot-{{ ann.type }}"></div>
+            <div>
+              <div class="ann-date">{{ ann.date }}</div>
+              <div class="ann-title">{{ ann.title }}</div>
+              <div class="ann-body">{{ ann.body }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="dash-footer">
+  <div class="dash-footer-inner">
+    <span>© 2025 Tamil Nadu Electricity Board</span>
+    <span>IT Help Desk: <strong>044-2345-6789</strong> · helpdesk@tneb.in</span>
+  </div>
+</footer>
+{% endblock %}

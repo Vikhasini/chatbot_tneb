@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Track Ticket — TNEB Digital Helpdesk{% endblock %}
+{% block extra_css %}
+<style>
+.pub-nav{background:#fff;border-bottom:1px solid #E2E8F0;position:sticky;top:0;z-index:100}
+.pub-nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:60px}
+.pub-brand{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+.pub-brand-name{font-size:15px;font-weight:800;color:#004A99}
+.pub-brand-sub{font-size:10.5px;color:#9AA5BE}
+.pub-nav-links{display:flex;align-items:center;gap:.25rem}
+.pub-nav-link{padding:.4rem .85rem;border-radius:20px;font-size:13px;font-weight:500;color:#1A2B4B;text-decoration:none;transition:background .13s,color .13s}
+.pub-nav-link:hover{background:#F0F4FA;color:#004A99}
+.pub-nav-link.active{background:#EBF3FF;color:#004A99;font-weight:600}
+.pub-login-btn{background:#004A99;color:#fff;border-radius:20px;padding:.4rem 1.1rem;font-size:13px;font-weight:600;text-decoration:none;transition:background .13s}
+.pub-login-btn:hover{background:#003370;color:#fff}
+.track-page{min-height:calc(100vh - 60px);background:#F8F9FB;padding:3rem 1.5rem 4rem}
+.track-inner{max-width:820px;margin:0 auto}
+.page-hero{background:linear-gradient(135deg,#004A99 0%,#0062cc 60%,#0F8B8D 100%);border-radius:18px;padding:2.5rem 2rem;color:#fff;margin-bottom:2rem;box-shadow:0 6px 24px rgba(0,74,153,.18)}
+.page-hero h2{font-size:24px;font-weight:800;margin-bottom:.4rem}
+.page-hero p{opacity:.8;font-size:14px;margin:0}
+.search-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:1.5rem;box-shadow:0 2px 10px rgba(0,74,153,.06);margin-bottom:1.5rem}
+.search-wrap{display:flex;gap:.75rem;align-items:center}
+.search-input{flex:1;border:1.5px solid #E2E8F0;border-radius:10px;padding:.6rem 1rem;font-size:14px;color:#1A2B4B;outline:none;transition:border-color .15s}
+.search-input:focus{border-color:#004A99;box-shadow:0 0 0 3px rgba(0,74,153,.09)}
+.search-btn{background:#004A99;color:#fff;border:none;border-radius:10px;padding:.6rem 1.4rem;font-size:14px;font-weight:600;cursor:pointer;transition:background .13s;white-space:nowrap}
+.search-btn:hover{background:#003370}
+.search-error{color:#C62828;font-size:13px;margin-top:.5rem}
+.result-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,74,153,.06);margin-bottom:1.25rem}
+.result-header{padding:1.25rem 1.5rem;background:#F8F9FB;border-bottom:1px solid #E2E8F0;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.ticket-id-lg{font-size:20px;font-weight:800;font-family:monospace;color:#004A99;background:#EBF3FF;padding:3px 12px;border-radius:8px}
+.ticket-subject{font-size:14px;color:#6B7A99;margin-top:4px}
+.result-body{padding:1.25rem 1.5rem}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.75rem;margin-bottom:1.25rem}
+.meta-item{background:#F8F9FB;border-radius:10px;padding:.65rem .9rem;display:flex;align-items:flex-start;gap:.6rem}
+.meta-item i{color:#004A99;font-size:15px;margin-top:2px}
+.meta-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:#9AA5BE;font-weight:700}
+.meta-value{font-size:13.5px;font-weight:500;color:#1A2B4B;margin-top:2px}
+.reply-box{background:#EBF3FF;border-left:4px solid #004A99;border-radius:0 10px 10px 0;padding:.85rem 1rem;margin-top:.75rem}
+.reply-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#004A99;margin-bottom:.35rem}
+.reply-text{font-size:13.5px;color:#1A2B4B;line-height:1.65}
+.timeline-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:1.25rem 1.5rem;box-shadow:0 2px 10px rgba(0,74,153,.06)}
+.tl-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A99;margin-bottom:1rem}
+.tl-steps{display:flex;flex-direction:column;gap:0}
+.tl-step{display:flex;align-items:flex-start;gap:1rem;padding-bottom:1.5rem;position:relative}
+.tl-step:last-child{padding-bottom:0}
+.tl-step:not(:last-child)::before{content:'';position:absolute;left:11px;top:24px;width:2px;height:calc(100% - 12px);background:#E2E8F0}
+.tl-step.done:not(:last-child)::before{background:#2E7D32}
+.tl-dot i{font-size:24px;color:#E2E8F0;display:block}
+.tl-step.done .tl-dot i{color:#2E7D32}
+.tl-step.active .tl-dot i{color:#004A99}
+.tl-lbl{font-size:14px;font-weight:600;color:#9AA5BE;padding-top:2px}
+.tl-step.done .tl-lbl{color:#2E7D32}
+.tl-step.active .tl-lbl{color:#004A99}
+.tl-date{font-size:11px;color:#9AA5BE;margin-top:2px}
+.empty-state{text-align:center;padding:3rem 1rem;color:#9AA5BE}
+.empty-state i{font-size:3.5rem;color:#E2E8F0;display:block;margin-bottom:1rem}
+.sbadge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.sbadge-open{background:#E3F2FD;color:#1565C0}
+.sbadge-assigned{background:#E8EAF6;color:#283593}
+.sbadge-in-progress{background:#FFF8E1;color:#F57F17}
+.sbadge-resolved{background:#E8F5E9;color:#2E7D32}
+.sbadge-closed{background:#ECEFF1;color:#546E7A}
+.pub-footer{background:#1A2B4B;color:rgba(255,255,255,.6);padding:1.5rem;font-size:12.5px}
+.pub-footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+</style>
+{% endblock %}
+{% block body %}
+<nav class="pub-nav">
+  <div class="pub-nav-inner">
+    <a href="{{ url_for('public.home') }}" class="pub-brand">
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="10" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div><div class="pub-brand-name">TNEB Digital Helpdesk</div><div class="pub-brand-sub">Tamil Nadu Electricity Board</div></div>
+    </a>
+    <div class="pub-nav-links">
+      <a href="{{ url_for('public.helpdesk') }}"     class="pub-nav-link"><i class="bi bi-chat-dots me-1"></i>Helpdesk</a>
+      <a href="{{ url_for('public.track') }}"        class="pub-nav-link active"><i class="bi bi-ticket me-1"></i>Track Ticket</a>
+      <a href="{{ url_for('public.faq') }}"          class="pub-nav-link"><i class="bi bi-question-circle me-1"></i>FAQ</a>
+      <a href="{{ url_for('auth.login') }}"          class="pub-login-btn ms-2"><i class="bi bi-person me-1"></i>Employee Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="track-page">
+  <div class="track-inner">
+    <div class="page-hero">
+      <h2><i class="bi bi-ticket-detailed-fill me-2"></i>Track Your Support Ticket</h2>
+      <p>Enter your ticket number to view real-time status, admin responses, and resolution updates.</p>
+    </div>
+
+    <div class="search-card">
+      <div class="search-wrap">
+        <input type="text" id="ticketInput" class="search-input"
+               placeholder="Enter Ticket ID — e.g. TKT1025"
+               oninput="this.value=this.value.toUpperCase()"
+               onkeydown="if(event.key==='Enter') searchTicket()">
+        <button class="search-btn" onclick="searchTicket()">
+          <i class="bi bi-search me-1"></i>Search
+        </button>
+      </div>
+      <div id="searchError" class="search-error" style="display:none"></div>
+    </div>
+
+    <div id="ticketResult" style="display:none">
+      <div class="result-card">
+        <div class="result-header">
+          <div>
+            <div class="ticket-id-lg" id="r_id"></div>
+            <div class="ticket-subject" id="r_subject"></div>
+          </div>
+          <span id="r_badge"></span>
+        </div>
+        <div class="result-body">
+          <div class="meta-grid">
+            <div class="meta-item"><i class="bi bi-tag"></i><div><div class="meta-label">Category</div><div class="meta-value" id="r_cat"></div></div></div>
+            <div class="meta-item"><i class="bi bi-person"></i><div><div class="meta-label">Raised By</div><div class="meta-value" id="r_emp"></div></div></div>
+            <div class="meta-item"><i class="bi bi-exclamation-diamond"></i><div><div class="meta-label">Priority</div><div class="meta-value" id="r_priority"></div></div></div>
+            <div class="meta-item"><i class="bi bi-calendar3"></i><div><div class="meta-label">Created</div><div class="meta-value" id="r_created"></div></div></div>
+            <div class="meta-item"><i class="bi bi-arrow-clockwise"></i><div><div class="meta-label">Last Updated</div><div class="meta-value" id="r_updated"></div></div></div>
+            <div class="meta-item"><i class="bi bi-calendar-check"></i><div><div class="meta-label">Resolved</div><div class="meta-value" id="r_resolved"></div></div></div>
+          </div>
+          <div id="r_reply_box" class="reply-box" style="display:none">
+            <div class="reply-label"><i class="bi bi-chat-left-text me-1"></i>Admin Response</div>
+            <div class="reply-text" id="r_reply"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-card">
+        <div class="tl-title"><i class="bi bi-activity me-2"></i>Ticket Progress</div>
+        <div class="tl-steps" id="tl_steps"></div>
+      </div>
+    </div>
+
+    <div id="emptyState" class="empty-state">
+      <i class="bi bi-ticket-detailed"></i>
+      <h5 style="color:#1A2B4B">Enter a Ticket ID above</h5>
+      <p style="font-size:13px">Format: <code>TKT</code> followed by digits — e.g. <code>TKT1025</code></p>
+      <a href="{{ url_for('public.helpdesk') }}" style="color:#004A99;font-size:13px;font-weight:600">
+        <i class="bi bi-chat-dots me-1"></i>Report a New Issue via Chat
+      </a>
+    </div>
+  </div>
+</div>
+
+<footer class="pub-footer"><div class="pub-footer-inner">
+  <span>© 2025 Tamil Nadu Electricity Board — TNEB Digital Helpdesk</span>
+  <span>IT Helpdesk: <strong style="color:#fff">044-2345-6789</strong> | helpdesk@tneb.in</span>
+</div></footer>
+{% endblock %}
+{% block extra_js %}
+<script>
+const STATUS_BADGE = {
+  'Open':'sbadge-open','Assigned':'sbadge-assigned',
+  'In Progress':'sbadge-in-progress','Resolved':'sbadge-resolved','Closed':'sbadge-closed'
+};
+async function searchTicket() {
+  const id = document.getElementById('ticketInput').value.trim();
+  if (!id) return;
+  document.getElementById('ticketResult').style.display='none';
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('searchError').style.display='none';
+  const res  = await fetch(`/track/search?ticket_id=${encodeURIComponent(id)}`);
+  const data = await res.json();
+  if (!data.found) {
+    const e = document.getElementById('searchError');
+    e.textContent = data.message || 'Ticket not found.';
+    e.style.display='block';
+    document.getElementById('emptyState').style.display='block';
+    return;
+  }
+  const t = data.ticket;
+  document.getElementById('r_id').textContent       = t.id;
+  document.getElementById('r_subject').textContent  = t.subject;
+  document.getElementById('r_cat').textContent      = t.category;
+  document.getElementById('r_emp').textContent      = t.employee_name;
+  document.getElementById('r_priority').textContent = t.priority;
+  document.getElementById('r_created').textContent  = t.created_at;
+  document.getElementById('r_updated').textContent  = t.updated_at;
+  document.getElementById('r_resolved').textContent = t.resolved_at || '—';
+  const badge = document.getElementById('r_badge');
+  badge.textContent = t.status;
+  badge.className   = 'sbadge ' + (STATUS_BADGE[t.status] || 'sbadge-open');
+  if (t.public_reply) {
+    document.getElementById('r_reply').textContent = t.public_reply;
+    document.getElementById('r_reply_box').style.display='block';
+  }
+  const tl = document.getElementById('tl_steps');
+  tl.innerHTML = '';
+  data.timeline.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'tl-step' + (s.completed?' done':'') + (s.active?' active':'');
+    div.innerHTML = `
+      <div class="tl-dot"><i class="bi bi-${s.completed?(s.active?'record-circle-fill':'check-circle-fill'):'circle'}"></i></div>
+      <div><div class="tl-lbl">${s.status}</div>${s.date?`<div class="tl-date">${s.date}</div>`:''}</div>`;
+    tl.appendChild(div);
+  });
+  document.getElementById('ticketResult').style.display='block';
+}
+const p = new URLSearchParams(window.location.search);
+if (p.get('id')) { document.getElementById('ticketInput').value = p.get('id').toUpperCase(); searchTicket(); }
+</script>
+{% endblock %}

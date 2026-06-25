@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Request Official Email — TNEB Digital Helpdesk{% endblock %}
+{% block extra_css %}
+<style>
+.pub-nav{background:#fff;border-bottom:1px solid #E2E8F0;position:sticky;top:0;z-index:100}
+.pub-nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:60px}
+.pub-brand{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+.pub-brand-name{font-size:15px;font-weight:800;color:#004A99}
+.pub-brand-sub{font-size:10.5px;color:#9AA5BE}
+.pub-nav-links{display:flex;align-items:center;gap:.25rem}
+.pub-nav-link{padding:.4rem .85rem;border-radius:20px;font-size:13px;font-weight:500;color:#1A2B4B;text-decoration:none}
+.pub-nav-link:hover{background:#F0F4FA;color:#004A99}
+.pub-login-btn{background:#004A99;color:#fff;border-radius:20px;padding:.4rem 1.1rem;font-size:13px;font-weight:600;text-decoration:none}
+.pub-login-btn:hover{background:#003370;color:#fff}
+.re-page{min-height:calc(100vh - 60px);background:#F8F9FB;padding:2.5rem 1.5rem 4rem;display:flex;align-items:flex-start;justify-content:center}
+.re-card{background:#fff;border:1px solid #E2E8F0;border-radius:18px;box-shadow:0 6px 32px rgba(0,74,153,.10);padding:2.25rem 2rem;width:100%;max-width:560px}
+.re-title{font-size:22px;font-weight:800;color:#1A2B4B;margin-bottom:4px}
+.re-sub{font-size:13.5px;color:#6B7A99;margin-bottom:1.5rem;line-height:1.55}
+.info-box{background:#F3E5F5;border-left:4px solid #6A1B9A;border-radius:0 8px 8px 0;padding:.75rem 1rem;font-size:12.5px;color:#1A2B4B;margin-bottom:1.25rem;display:flex;gap:.6rem;align-items:flex-start}
+.info-box i{color:#6A1B9A;flex-shrink:0;margin-top:1px}
+.flabel{font-size:13px;font-weight:600;color:#1A2B4B;margin-bottom:5px}
+.fhint{font-size:11.5px;color:#9AA5BE;margin-top:4px}
+.finput{width:100%;border:1.5px solid #E2E8F0;border-radius:10px;padding:.6rem .9rem;font-size:14px;color:#1A2B4B;outline:none;transition:border-color .15s}
+.finput:focus{border-color:#004A99;box-shadow:0 0 0 3px rgba(0,74,153,.09)}
+.submit-btn{width:100%;background:#6A1B9A;color:#fff;border:none;border-radius:10px;padding:.7rem;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:background .14s}
+.submit-btn:hover{background:#531572}
+.cancel-link{width:100%;background:none;color:#6B7A99;border:1.5px solid #E2E8F0;border-radius:10px;padding:.65rem;font-size:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:border-color .14s}
+.cancel-link:hover{border-color:#004A99;color:#004A99}
+.pub-footer{background:#1A2B4B;color:rgba(255,255,255,.6);padding:1.5rem;font-size:12.5px}
+.pub-footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+</style>
+{% endblock %}
+{% block body %}
+<nav class="pub-nav">
+  <div class="pub-nav-inner">
+    <a href="{{ url_for('public.home') }}" class="pub-brand">
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="10" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div><div class="pub-brand-name">TNEB Digital Helpdesk</div><div class="pub-brand-sub">Tamil Nadu Electricity Board</div></div>
+    </a>
+    <div class="pub-nav-links">
+      <a href="{{ url_for('public.helpdesk') }}" class="pub-nav-link"><i class="bi bi-chat-dots me-1"></i>Helpdesk</a>
+      <a href="{{ url_for('public.track') }}"    class="pub-nav-link"><i class="bi bi-ticket me-1"></i>Track Ticket</a>
+      <a href="{{ url_for('public.faq') }}"      class="pub-nav-link"><i class="bi bi-question-circle me-1"></i>FAQ</a>
+      <a href="{{ url_for('auth.login') }}"      class="pub-login-btn ms-2"><i class="bi bi-person me-1"></i>Employee Login</a>
+    </div>
+  </div>
+</nav>
+<div class="re-page">
+  <div class="re-card">
+    <div class="re-title"><i class="bi bi-envelope-plus-fill me-2" style="color:#6A1B9A"></i>Request Official Email</div>
+    <div class="re-sub">New TNEB employees can request an official email address. Your details will be verified by the IT department.</div>
+    <div class="info-box">
+      <i class="bi bi-info-circle-fill"></i>
+      <span>Email provisioning takes 1–3 working days after admin approval. Your personal email will be used for communication until then.</span>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for cat, msg in messages %}
+      <div class="alert alert-{{ 'danger' if cat=='danger' else 'warning' }} alert-dismissible py-2 mb-3">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}{% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('public.request_email') }}" novalidate>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <div class="flabel">Employee ID <span style="color:#C62828">*</span></div>
+          <input type="text" name="employee_id" class="finput" placeholder="EMP042"
+                 value="{{ form_data.get('employee_id','') }}" oninput="this.value=this.value.toUpperCase()" required>
+        </div>
+        <div class="col-6">
+          <div class="flabel">Full Name <span style="color:#C62828">*</span></div>
+          <input type="text" name="name" class="finput" placeholder="Your full name"
+                 value="{{ form_data.get('name','') }}" required>
+        </div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <div class="flabel">Department <span style="color:#C62828">*</span></div>
+          <select name="department" class="finput" required>
+            <option value="">— Select —</option>
+            {% for d in ['Distribution','Transmission','Generation','Finance','HR & Admin','Operations & Maintenance'] %}
+            <option value="{{ d }}" {{ 'selected' if form_data.get('department')==d }}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6">
+          <div class="flabel">Designation <span style="color:#C62828">*</span></div>
+          <select name="designation" class="finput" required>
+            <option value="">— Select —</option>
+            {% for d in ['Junior Engineer','Assistant Engineer','Divisional Engineer','Executive Engineer','Superintending Engineer','Chief Engineer'] %}
+            <option value="{{ d }}" {{ 'selected' if form_data.get('designation')==d }}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="flabel">Office Location <span style="color:#C62828">*</span></div>
+        <input type="text" name="office_location" class="finput" placeholder="e.g. Anna Nagar Sub-Division, Chennai"
+               value="{{ form_data.get('office_location','') }}" required>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <div class="flabel">Mobile Number</div>
+          <input type="tel" name="phone" class="finput" placeholder="10-digit number"
+                 value="{{ form_data.get('phone','') }}" maxlength="15">
+        </div>
+        <div class="col-6">
+          <div class="flabel">Personal Email</div>
+          <input type="email" name="personal_email" class="finput" placeholder="For communication"
+                 value="{{ form_data.get('personal_email','') }}">
+        </div>
+      </div>
+      <div class="mb-4">
+        <div class="flabel">Reason / Additional Info</div>
+        <textarea name="reason" class="finput" rows="3" placeholder="New joinee, transferred employee, etc."
+                  style="resize:vertical">{{ form_data.get('reason','') }}</textarea>
+      </div>
+      <div class="d-flex flex-column gap-2">
+        <button type="submit" class="submit-btn"><i class="bi bi-send-fill"></i> Submit Email Request</button>
+        <a href="{{ url_for('public.home') }}" class="cancel-link"><i class="bi bi-arrow-left"></i> Back to Home</a>
+      </div>
+    </form>
+  </div>
+</div>
+<footer class="pub-footer"><div class="pub-footer-inner">
+  <span>© 2025 Tamil Nadu Electricity Board</span>
+  <span>IT Helpdesk: <strong style="color:#fff">044-2345-6789</strong></span>
+</div></footer>
+{% endblock %}

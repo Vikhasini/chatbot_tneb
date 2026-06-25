@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}Track Ticket — TNEB Portal{% endblock %}
+
+{% block body %}
+<header class="portal-header">
+    <div class="header-inner">
+        <div class="header-brand">
+            <a href="{{ url_for('employee.dashboard') }}" class="back-btn me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="header-logo">
+                <svg width="38" height="38" viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="10" fill="#004A99"/>
+                    <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+                </svg>
+            </div>
+            <div class="header-brand-text">
+                <span class="header-title">Ticket Tracking</span>
+                <span class="header-sub">TNEB Email Support Portal</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('chatbot.support') }}" class="header-icon-btn" title="Chat Support">
+                <i class="bi bi-chat-dots"></i>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="header-icon-btn" title="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="portal-main">
+    <div class="container" style="max-width: 860px; padding: 2rem 1rem;">
+
+        <div class="page-hero mb-4">
+            <div class="page-hero-icon"><i class="bi bi-ticket-detailed-fill"></i></div>
+            <div>
+                <h4 class="page-hero-title">Track Your Support Ticket</h4>
+                <p class="page-hero-sub">Enter your Ticket ID to view real-time status and updates.</p>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="portal-card mb-4">
+            <div class="portal-card-body">
+                <div class="ticket-search-wrap">
+                    <div class="input-with-icon flex-grow-1">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="ticketSearchInput" class="form-control portal-input"
+                               placeholder="Enter Ticket ID (e.g., TKT1025)"
+                               oninput="this.value = this.value.toUpperCase()"
+                               onkeydown="if(event.key==='Enter') searchTicket()">
+                    </div>
+                    <button class="btn btn-primary px-4" onclick="searchTicket()">
+                        <i class="bi bi-search me-2"></i>Search
+                    </button>
+                </div>
+                <div id="searchError" class="search-error" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- Ticket Result Area -->
+        <div id="ticketResult" style="display:none">
+
+            <!-- Ticket Header Card -->
+            <div class="portal-card mb-4">
+                <div class="portal-card-body">
+                    <div class="ticket-detail-header">
+                        <div>
+                            <code class="ticket-id-large" id="res_ticket_id"></code>
+                            <div class="ticket-detail-subject mt-1" id="res_subject"></div>
+                        </div>
+                        <span class="status-badge-lg" id="res_status_badge"></span>
+                    </div>
+
+                    <div class="ticket-meta-grid mt-3">
+                        <div class="ticket-meta-item">
+                            <i class="bi bi-tag"></i>
+                            <div>
+                                <div class="meta-label">Category</div>
+                                <div class="meta-value" id="res_category"></div>
+                            </div>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="bi bi-person"></i>
+                            <div>
+                                <div class="meta-label">Raised By</div>
+                                <div class="meta-value" id="res_employee"></div>
+                            </div>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="bi bi-geo-alt"></i>
+                            <div>
+                                <div class="meta-label">Office</div>
+                                <div class="meta-value" id="res_office"></div>
+                            </div>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="bi bi-exclamation-diamond"></i>
+                            <div>
+                                <div class="meta-label">Priority</div>
+                                <div class="meta-value" id="res_priority"></div>
+                            </div>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="bi bi-calendar3"></i>
+                            <div>
+                                <div class="meta-label">Created</div>
+                                <div class="meta-value" id="res_created"></div>
+                            </div>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="bi bi-person-badge"></i>
+                            <div>
+                                <div class="meta-label">Assigned To</div>
+                                <div class="meta-value" id="res_assigned"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-description-box mt-3">
+                        <div class="desc-label">Issue Description</div>
+                        <div class="desc-text" id="res_description"></div>
+                    </div>
+
+                    <div class="ticket-resolution-box mt-3" id="resolutionBox" style="display:none">
+                        <div class="desc-label"><i class="bi bi-check-circle me-1 text-success"></i>Resolution Notes</div>
+                        <div class="desc-text" id="res_resolution"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="portal-card">
+                <div class="portal-card-header">
+                    <span><i class="bi bi-activity me-2"></i>Ticket Progress</span>
+                </div>
+                <div class="portal-card-body">
+                    <div class="ticket-timeline" id="ticketTimeline"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-track-state">
+            <div class="empty-track-icon"><i class="bi bi-ticket-detailed"></i></div>
+            <h5>Enter a Ticket ID to get started</h5>
+            <p>Use the Ticket ID sent to you when your issue was reported.<br>
+               Format: <code>TKT</code> followed by 4 digits (e.g., <code>TKT1025</code>)</p>
+            <a href="{{ url_for('chatbot.support') }}" class="btn btn-outline-primary mt-2">
+                <i class="bi bi-chat-dots me-2"></i>Report a New Issue
+            </a>
+        </div>
+
+    </div>
+</main>
+<footer class="portal-footer">
+    <div class="container-xl">
+        <span>© 2025 Tamil Nadu Electricity Board. All rights reserved.</span>
+        <span>IT Help Desk: <strong>044-2345-6789</strong> | helpdesk@tneb.in</span>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function searchTicket() {
+    const id = document.getElementById('ticketSearchInput').value.trim();
+    if (!id) return;
+
+    document.getElementById('ticketResult').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('searchError').style.display = 'none';
+
+    const res = await fetch(`/tickets/search?ticket_id=${encodeURIComponent(id)}`);
+    const data = await res.json();
+
+    if (!data.found) {
+        const err = document.getElementById('searchError');
+        err.textContent = data.message || 'Ticket not found.';
+        err.style.display = 'block';
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+    }
+
+    const t = data.ticket;
+    document.getElementById('res_ticket_id').textContent = t.id;
+    document.getElementById('res_subject').textContent = t.subject;
+    document.getElementById('res_category').textContent = t.category;
+    document.getElementById('res_employee').textContent = t.employee_name + ' (' + t.employee_designation + ')';
+    document.getElementById('res_office').textContent = t.employee_office;
+    document.getElementById('res_priority').innerHTML = `<span class="priority-${t.priority.toLowerCase()}">${t.priority}</span>`;
+    document.getElementById('res_created').textContent = t.created_at;
+    document.getElementById('res_assigned').textContent = t.assigned_to || 'Not yet assigned';
+    document.getElementById('res_description').textContent = t.description;
+
+    const statusBadge = document.getElementById('res_status_badge');
+    statusBadge.textContent = t.status;
+    statusBadge.className = 'status-badge-lg status-' + t.status.toLowerCase().replace(' ', '-');
+
+    if (t.resolution_notes) {
+        document.getElementById('res_resolution').textContent = t.resolution_notes;
+        document.getElementById('resolutionBox').style.display = 'block';
+    }
+
+    // Build timeline
+    const tlContainer = document.getElementById('ticketTimeline');
+    tlContainer.innerHTML = '';
+    data.timeline.forEach(step => {
+        const div = document.createElement('div');
+        div.className = `tl-step ${step.completed ? 'tl-done' : ''} ${step.active ? 'tl-active' : ''}`;
+        div.innerHTML = `
+            <div class="tl-dot">
+                <i class="bi bi-${step.completed ? (step.active ? 'record-circle-fill' : 'check-circle-fill') : 'circle'}"></i>
+            </div>
+            <div class="tl-content">
+                <div class="tl-label">${step.status}</div>
+                ${step.date ? `<div class="tl-date">${step.date}</div>` : ''}
+            </div>
+        `;
+        tlContainer.appendChild(div);
+    });
+
+    document.getElementById('ticketResult').style.display = 'block';
+}
+
+// Auto-search if URL has ticket param
+const urlParams = new URLSearchParams(window.location.search);
+const tid = urlParams.get('id');
+if (tid) {
+    document.getElementById('ticketSearchInput').value = tid.toUpperCase();
+    searchTicket();
+}
+</script>
+{% endblock %}

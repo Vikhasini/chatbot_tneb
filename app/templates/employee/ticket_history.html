@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}My Tickets — TNEB Portal{% endblock %}
+{% block extra_css %}
+<style>
+.dash-header{background:#fff;border-bottom:1px solid #E2E8F0;position:sticky;top:0;z-index:100}
+.dash-header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:60px}
+.dash-brand-name{font-size:15px;font-weight:700;color:#004A99}
+.dash-brand-sub{font-size:11px;color:#9AA5BE}
+.th-page{min-height:calc(100vh - 60px);background:#F8F9FB;padding:2.5rem 1.5rem 4rem}
+.th-inner{max-width:960px;margin:0 auto}
+.th-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem}
+.th-title{font-size:20px;font-weight:800;color:#1A2B4B}
+.new-ticket-btn{background:#004A99;color:#fff;border-radius:10px;padding:.55rem 1.2rem;font-size:13.5px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:background .13s}
+.new-ticket-btn:hover{background:#003370;color:#fff}
+.ticket-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:.85rem;box-shadow:0 1px 6px rgba(0,74,153,.05);transition:box-shadow .15s,border-color .15s}
+.ticket-card:hover{box-shadow:0 4px 16px rgba(0,74,153,.09);border-color:#004A99}
+.tk-row1{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem}
+.tk-id{font-size:13px;font-family:monospace;background:#EBF3FF;color:#004A99;padding:2px 8px;border-radius:6px;font-weight:700}
+.tk-cat{display:inline-block;background:#F0F4FA;border:1px solid #E2E8F0;border-radius:20px;padding:2px 10px;font-size:11.5px;color:#4A5568}
+.tk-subject{font-size:15px;font-weight:600;color:#1A2B4B;margin-bottom:.3rem}
+.tk-desc{font-size:13px;color:#6B7A99;margin-bottom:.5rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tk-row3{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.tk-meta{font-size:12px;color:#9AA5BE}
+.tk-reply{background:#EBF3FF;border-left:3px solid #004A99;border-radius:0 6px 6px 0;padding:.5rem .75rem;font-size:12.5px;color:#1A2B4B;margin-top:.5rem}
+.tk-reply-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#004A99;margin-bottom:2px}
+.sbadge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
+.sbadge-open{background:#E3F2FD;color:#1565C0}
+.sbadge-assigned{background:#E8EAF6;color:#283593}
+.sbadge-in-progress{background:#FFF8E1;color:#F57F17}
+.sbadge-resolved{background:#E8F5E9;color:#2E7D32}
+.sbadge-closed{background:#ECEFF1;color:#546E7A}
+.empty-state{text-align:center;padding:4rem 1rem;color:#9AA5BE}
+.empty-state i{font-size:3.5rem;color:#E2E8F0;display:block;margin-bottom:1rem}
+</style>
+{% endblock %}
+{% block body %}
+<header class="dash-header">
+  <div class="dash-header-inner">
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <a href="{{ url_for('employee.dashboard') }}" style="color:#6B7A99;font-size:20px;text-decoration:none"><i class="bi bi-arrow-left"></i></a>
+      <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="10" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div><div class="dash-brand-name">My Support Tickets</div><div class="dash-brand-sub">TNEB Digital Helpdesk</div></div>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" style="color:#6B7A99;font-size:20px;text-decoration:none"><i class="bi bi-box-arrow-right"></i></a>
+  </div>
+</header>
+
+<div class="th-page">
+  <div class="th-inner">
+    <div class="th-hd">
+      <div class="th-title">My Tickets
+        <span style="font-size:14px;font-weight:400;color:#9AA5BE;margin-left:.5rem">({{ tickets.total }} total)</span>
+      </div>
+      <a href="{{ url_for('employee.raise_ticket') }}" class="new-ticket-btn">
+        <i class="bi bi-plus-lg"></i> New Ticket
+      </a>
+    </div>
+
+    {% if tickets.items %}
+      {% for t in tickets.items %}
+      <div class="ticket-card">
+        <div class="tk-row1">
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <span class="tk-id">{{ t.ticket_id }}</span>
+            <span class="tk-cat">{{ t.category }}</span>
+          </div>
+          {% set sc = t.status.lower().replace(' ','-') %}
+          <span class="sbadge sbadge-{{ sc }}">{{ t.status }}</span>
+        </div>
+        <div class="tk-subject">{{ t.subject }}</div>
+        <div class="tk-desc">{{ t.description }}</div>
+        {% if t.public_reply %}
+        <div class="tk-reply">
+          <div class="tk-reply-label"><i class="bi bi-chat-left-text me-1"></i>Admin Response</div>
+          {{ t.public_reply }}
+        </div>
+        {% endif %}
+        <div class="tk-row3">
+          <span class="tk-meta"><i class="bi bi-calendar3 me-1"></i>{{ t.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+          <span class="tk-meta">
+            Priority: <strong style="color:{% if t.priority=='Critical' %}#4A148C{% elif t.priority=='High' %}#C62828{% elif t.priority=='Medium' %}#E65100{% else %}#2E7D32{% endif %}">{{ t.priority }}</strong>
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+
+      {% if tickets.pages > 1 %}
+      <nav class="mt-3"><ul class="pagination justify-content-center mb-0">
+        {% if tickets.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ tickets.prev_num }}">Previous</a></li>{% endif %}
+        {% for p in tickets.iter_pages() %}{% if p %}
+        <li class="page-item {% if p==tickets.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+        {% endif %}{% endfor %}
+        {% if tickets.has_next %}<li class="page-item"><a class="page-link" href="?page={{ tickets.next_num }}">Next</a></li>{% endif %}
+      </ul></nav>
+      {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-ticket"></i>
+      <h5 style="color:#1A2B4B">No tickets yet</h5>
+      <p style="font-size:13.5px">You haven't raised any support tickets.</p>
+      <a href="{{ url_for('employee.raise_ticket') }}" class="new-ticket-btn" style="margin-top:.5rem">
+        <i class="bi bi-plus-lg"></i> Raise Your First Ticket
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

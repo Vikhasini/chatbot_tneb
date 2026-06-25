@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% block title %}Email Requests — Admin{% endblock %}
+{% block body %}
+<header class="portal-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg width="38" height="38" viewBox="0 0 56 56" fill="none">
+          <rect width="56" height="56" rx="10" fill="#004A99"/>
+          <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+        </svg>
+      </div>
+      <div class="header-brand-text">
+        <span class="header-title">Official Email Requests</span>
+        <span class="header-sub">TNEB Digital Helpdesk — Admin</span>
+      </div>
+    </div>
+    <nav class="admin-top-nav">
+      <a href="{{ url_for('admin.dashboard') }}"        class="admin-nav-link"><i class="bi bi-grid"></i> Dashboard</a>
+      <a href="{{ url_for('admin.notifications_page') }}" class="admin-nav-link">
+        <i class="bi bi-bell"></i> Notifications
+        {% if unread > 0 %}<span class="notif-count">{{ unread }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin.ticket_list') }}"      class="admin-nav-link"><i class="bi bi-ticket"></i> Tickets</a>
+      <a href="{{ url_for('admin.password_requests') }}" class="admin-nav-link"><i class="bi bi-key"></i> Password Resets</a>
+      <a href="{{ url_for('admin.email_requests') }}"   class="admin-nav-link active"><i class="bi bi-envelope-plus"></i> Email Requests</a>
+      <a href="{{ url_for('admin.employees') }}"        class="admin-nav-link"><i class="bi bi-people"></i> Employees</a>
+    </nav>
+    <div class="header-actions">
+      <a href="{{ url_for('auth.logout') }}" class="header-icon-btn" title="Logout"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+</header>
+
+<main class="portal-main admin-main">
+  <div class="container-xl px-4 py-4">
+
+    <!-- Status filter chips -->
+    <div class="d-flex gap-3 flex-wrap mb-4">
+      <a href="?status=" class="req-chip {% if not status_filter %}req-chip-active{% endif %}">
+        All <span class="req-chip-n">{{ pending_count + approved_count + rejected_count }}</span>
+      </a>
+      <a href="?status=Pending" class="req-chip {% if status_filter=='Pending' %}req-chip-active{% endif %}">
+        <span class="rc-dot rc-dot-pending"></span>Pending <span class="req-chip-n">{{ pending_count }}</span>
+      </a>
+      <a href="?status=Approved" class="req-chip {% if status_filter=='Approved' %}req-chip-active{% endif %}">
+        <span class="rc-dot rc-dot-approved"></span>Approved <span class="req-chip-n">{{ approved_count }}</span>
+      </a>
+      <a href="?status=Rejected" class="req-chip {% if status_filter=='Rejected' %}req-chip-active{% endif %}">
+        <span class="rc-dot rc-dot-rejected"></span>Rejected <span class="req-chip-n">{{ rejected_count }}</span>
+      </a>
+    </div>
+
+    <div class="portal-card">
+      <div class="portal-card-header">
+        <span><i class="bi bi-envelope-plus me-2"></i>Official Email Requests
+          <span class="text-muted small ms-2">({{ requests.total }} total)</span>
+        </span>
+        {% if pending_count > 0 %}
+        <span class="badge bg-warning text-dark">{{ pending_count }} Pending</span>
+        {% endif %}
+      </div>
+      <div class="portal-card-body p-0">
+        <div class="table-responsive">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Employee</th>
+                <th>Designation / Dept</th>
+                <th>Office</th>
+                <th>Contact</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th style="min-width:160px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for r in requests.items %}
+              <tr id="er-row-{{ r.id }}">
+                <td><code>{{ r.request_id }}</code></td>
+                <td>
+                  <div class="fw-500">{{ r.employee_name }}</div>
+                  <div class="text-muted" style="font-size:11px">{{ r.employee_id_str }}</div>
+                </td>
+                <td>
+                  <div style="font-size:12.5px">{{ r.designation }}</div>
+                  <div class="text-muted" style="font-size:11px">{{ r.department }}</div>
+                </td>
+                <td style="font-size:12.5px">{{ r.office_location }}</td>
+                <td>
+                  <div style="font-size:12.5px">{{ r.phone or '—' }}</div>
+                  <div class="text-muted" style="font-size:11px">{{ r.personal_email or '—' }}</div>
+                </td>
+                <td style="font-size:12.5px;max-width:150px;word-break:break-word">
+                  {{ r.reason or '—' }}
+                </td>
+                <td>
+                  <span id="er-badge-{{ r.id }}"
+                        class="status-badge status-{{ r.status.lower() }}">{{ r.status }}</span>
+                  {% if r.status == 'Approved' and r.assigned_email %}
+                  <div style="font-size:11px;color:#2E7D32;margin-top:3px">
+                    <i class="bi bi-envelope-check me-1"></i>{{ r.assigned_email }}
+                  </div>
+                  {% endif %}
+                  {% if r.status == 'Rejected' and r.rejection_reason %}
+                  <div class="text-muted mt-1" style="font-size:11px">{{ r.rejection_reason }}</div>
+                  {% endif %}
+                </td>
+                <td class="text-muted" style="font-size:12px">
+                  {{ r.created_at.strftime('%d %b %Y') }}<br>{{ r.created_at.strftime('%I:%M %p') }}
+                </td>
+                <td>
+                  {% if r.status == 'Pending' %}
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-success"
+                            onclick="openApprove({{ r.id }}, '{{ r.employee_name }}', '{{ r.request_id }}', '{{ r.designation }}', '{{ r.office_location }}')">
+                      <i class="bi bi-check2"></i> Approve
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openReject({{ r.id }}, '{{ r.employee_name }}', '{{ r.request_id }}')">
+                      <i class="bi bi-x"></i> Reject
+                    </button>
+                  </div>
+                  {% elif r.status == 'Approved' %}
+                  <div style="font-size:11.5px;color:#2E7D32">
+                    <i class="bi bi-check-circle me-1"></i>
+                    By {{ r.approver.username if r.approver else '—' }}<br>
+                    {{ r.resolved_at.strftime('%d %b %Y') if r.resolved_at else '' }}
+                  </div>
+                  {% elif r.status == 'Rejected' %}
+                  <div style="font-size:11.5px;color:#C62828">
+                    <i class="bi bi-x-circle me-1"></i>
+                    By {{ r.approver.username if r.approver else '—' }}<br>
+                    {{ r.resolved_at.strftime('%d %b %Y') if r.resolved_at else '' }}
+                  </div>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="9" class="text-center py-4 text-muted">No email requests found.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {% if requests.pages > 1 %}
+      <div class="portal-card-footer">
+        <nav><ul class="pagination mb-0 justify-content-end">
+          {% if requests.has_prev %}
+          <li class="page-item"><a class="page-link" href="?page={{ requests.prev_num }}&status={{ status_filter }}">Previous</a></li>
+          {% endif %}
+          {% for p in requests.iter_pages() %}{% if p %}
+          <li class="page-item {% if p==requests.page %}active{% endif %}">
+            <a class="page-link" href="?page={{ p }}&status={{ status_filter }}">{{ p }}</a>
+          </li>
+          {% endif %}{% endfor %}
+          {% if requests.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ requests.next_num }}&status={{ status_filter }}">Next</a></li>
+          {% endif %}
+        </ul></nav>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content portal-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-envelope-check me-2 text-success"></i>Approve Email Request</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info py-2 mb-3">
+          Approving for <strong id="a_name"></strong> (<code id="a_req_id"></code>)
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600">Assign Official Email Address <span class="text-danger">*</span></label>
+          <input type="email" id="a_email" class="form-control portal-input"
+                 placeholder="e.g. ae_madurai@tneb.in">
+          <div class="form-text">Suggested: <code id="a_suggested"></code></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600">Admin Remarks (optional)</label>
+          <textarea id="a_remarks" class="form-control portal-input" rows="2"
+                    placeholder="Any notes for this approval…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" onclick="submitApprove()">
+          <i class="bi bi-check2 me-1"></i>Confirm Approval
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content portal-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-x-circle me-2 text-danger"></i>Reject Email Request</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Rejecting request for <strong id="r_name"></strong> (<code id="r_req_id"></code>).</p>
+        <div class="mb-3">
+          <label class="form-label fw-600">Rejection Reason <span class="text-danger">*</span></label>
+          <textarea id="r_reason" class="form-control portal-input" rows="3"
+                    placeholder="Explain why this request is being rejected…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger" onclick="submitReject()">
+          <i class="bi bi-x-lg me-1"></i>Confirm Rejection
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Approved confirmation Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content portal-modal">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-envelope-check-fill me-2"></i>Email Address Assigned</h5>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div class="mb-2" style="font-size:13.5px;color:#1A2B4B">
+          Official email assigned to <strong id="s_name"></strong>:
+        </div>
+        <div style="font-size:22px;font-weight:800;font-family:monospace;background:#F0F4FA;
+                    border-radius:12px;padding:.85rem 1.5rem;color:#004A99;margin:1rem 0;
+                    display:flex;align-items:center;justify-content:center;gap:.75rem">
+          <span id="s_email"></span>
+          <button onclick="copyEmail()" style="background:none;border:none;cursor:pointer;
+                  color:#6B7A99;font-size:18px"><i class="bi bi-clipboard" id="copy_icon"></i></button>
+        </div>
+        <div class="alert alert-info py-2 mb-0" style="font-size:12.5px">
+          Communicate the email address and login credentials to the employee via official channels.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success w-100" data-bs-dismiss="modal" onclick="location.reload()">
+          <i class="bi bi-check2 me-1"></i>Done
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.req-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:#fff;border:1.5px solid #E2E8F0;font-size:13px;font-weight:500;color:#1A2B4B;text-decoration:none;transition:border-color .13s}
+.req-chip:hover{border-color:#004A99;color:#004A99}
+.req-chip-active{border-color:#004A99;background:#004A99;color:#fff}
+.req-chip-n{font-weight:700}
+.rc-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.rc-dot-pending{background:#E65100}
+.rc-dot-approved{background:#2E7D32}
+.rc-dot-rejected{background:#C62828}
+.fw-600{font-weight:600}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+let activeId = null;
+
+function openApprove(id, name, reqId, desig, office) {
+  activeId = id;
+  document.getElementById('a_name').textContent   = name;
+  document.getElementById('a_req_id').textContent = reqId;
+  document.getElementById('a_email').value        = '';
+  document.getElementById('a_remarks').value      = '';
+  // Suggest format based on designation and office
+  const prefix = {'Junior Engineer':'je','Assistant Engineer':'ae',
+    'Divisional Engineer':'de','Executive Engineer':'ee',
+    'Superintending Engineer':'se','Chief Engineer':'ce'}[desig] || 'emp';
+  const loc = office.toLowerCase().split(' ')[0].replace(/[^a-z]/g,'');
+  document.getElementById('a_suggested').textContent = `${prefix}_${loc}@tneb.in`;
+  new bootstrap.Modal(document.getElementById('approveModal')).show();
+}
+
+async function submitApprove() {
+  const email   = document.getElementById('a_email').value.trim();
+  const remarks = document.getElementById('a_remarks').value.trim();
+  if (!email) { alert('Please enter the email address to assign.'); return; }
+  const res  = await fetch(`/admin/email-requests/${activeId}/action`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'approve', assigned_email:email, remarks})
+  });
+  const data = await res.json();
+  if (data.success) {
+    bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
+    const badge = document.getElementById(`er-badge-${activeId}`);
+    if (badge) { badge.textContent='Approved'; badge.className='status-badge status-approved'; }
+    document.getElementById('s_name').textContent  = document.getElementById('a_name').textContent;
+    document.getElementById('s_email').textContent = data.assigned_email;
+    new bootstrap.Modal(document.getElementById('successModal')).show();
+  } else { alert('Error: ' + (data.error || 'Unknown')); }
+}
+
+function openReject(id, name, reqId) {
+  activeId = id;
+  document.getElementById('r_name').textContent   = name;
+  document.getElementById('r_req_id').textContent = reqId;
+  document.getElementById('r_reason').value       = '';
+  new bootstrap.Modal(document.getElementById('rejectModal')).show();
+}
+
+async function submitReject() {
+  const reason = document.getElementById('r_reason').value.trim();
+  if (!reason) { alert('Please provide a rejection reason.'); return; }
+  const res  = await fetch(`/admin/email-requests/${activeId}/action`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'reject', rejection_reason:reason})
+  });
+  const data = await res.json();
+  if (data.success) {
+    bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+    const badge = document.getElementById(`er-badge-${activeId}`);
+    if (badge) { badge.textContent='Rejected'; badge.className='status-badge status-rejected'; }
+    const row = document.getElementById(`er-row-${activeId}`);
+    if (row) { const td = row.querySelectorAll('td')[8]; if(td) td.innerHTML='<span style="font-size:12px;color:#C62828">Rejected</span>'; }
+  } else { alert('Error: ' + (data.error || 'Unknown')); }
+}
+
+function copyEmail() {
+  const txt = document.getElementById('s_email').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const ico = document.getElementById('copy_icon');
+    ico.className='bi bi-clipboard-check';
+    setTimeout(()=>{ ico.className='bi bi-clipboard'; }, 2000);
+  });
+}
+</script>
+{% endblock %}

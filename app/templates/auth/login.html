@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Login — TNEB Email Support Portal{% endblock %}
+
+{% block body %}
+<div class="login-page">
+  <!-- Left Panel -->
+  <div class="login-left">
+    <div class="login-brand">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+        <rect width="56" height="56" rx="12" fill="#004A99"/>
+        <path d="M10 18h36M28 18v20M16 38h24" stroke="#D9A441" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="4" fill="#0F8B8D"/>
+      </svg>
+      <div>
+        <div class="tneb-name">TNEB</div>
+        <div class="tneb-sub">Tamil Nadu Electricity Board</div>
+      </div>
+    </div>
+
+    <div class="login-illustration">
+      <svg viewBox="0 0 400 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="200" cy="170" r="130" fill="rgba(255,255,255,0.04)"/>
+        <circle cx="200" cy="170" r="90"  fill="rgba(255,255,255,0.05)"/>
+        <rect x="80" y="100" width="240" height="160" rx="12"
+              fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+        <path d="M80 115 L200 185 L320 115" stroke="rgba(217,164,65,0.8)" stroke-width="2.5" fill="none"/>
+        <rect x="110" y="210" width="100" height="8" rx="4" fill="rgba(255,255,255,0.18)"/>
+        <rect x="110" y="226" width="160" height="8" rx="4" fill="rgba(255,255,255,0.12)"/>
+        <rect x="110" y="242" width="80"  height="8" rx="4" fill="rgba(255,255,255,0.08)"/>
+        <circle cx="300" cy="120" r="30" fill="#0F8B8D"/>
+        <rect x="289" y="118" width="22" height="18" rx="3" fill="white"/>
+        <path d="M293 118v-5a7 7 0 0 1 14 0v5" stroke="white" stroke-width="2.5" fill="none"/>
+        <circle cx="300" cy="126" r="3" fill="#0F8B8D"/>
+        <circle cx="100" cy="220" r="26" fill="#D9A441"/>
+        <text x="100" y="226" text-anchor="middle" fill="white" font-size="16" font-weight="bold">?</text>
+        <circle cx="340" cy="200" r="4" fill="rgba(217,164,65,0.6)"/>
+        <circle cx="60"  cy="140" r="3" fill="rgba(15,139,141,0.6)"/>
+      </svg>
+    </div>
+
+    <div class="login-tagline">
+      <h2>Official Email Support<br>&amp; Helpdesk Portal</h2>
+      <p>Serving TNEB Employees Across Tamil Nadu</p>
+    </div>
+
+    <div class="login-features">
+      <div class="feat-item"><i class="bi bi-search"></i> Search Official Email IDs</div>
+      <div class="feat-item"><i class="bi bi-key"></i> Password Recovery</div>
+      <div class="feat-item"><i class="bi bi-ticket-detailed"></i> Ticket Tracking</div>
+      <div class="feat-item"><i class="bi bi-headset"></i> 24×7 Support</div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="login-right">
+    <div class="login-card">
+      <div class="login-card-header">
+        <div class="gov-badge"><i class="bi bi-shield-check"></i> Government of Tamil Nadu</div>
+        <h3>Employee Login</h3>
+        <p>Access your TNEB Email Support Portal</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+          <div class="alert alert-{{ 'danger' if cat == 'danger' else 'warning' if cat == 'warning' else 'success' }} alert-dismissible py-2 mb-3">
+            <i class="bi bi-{{ 'exclamation-circle' if cat == 'danger' else 'info-circle' }}"></i> {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Role tabs -->
+      <div class="role-tabs mb-4">
+        <button class="role-tab active" onclick="setRole('employee', this)">
+          <i class="bi bi-person-badge"></i> Employee
+        </button>
+        <button class="role-tab" onclick="setRole('admin', this)">
+          <i class="bi bi-shield-lock"></i> Admin
+        </button>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="role" id="roleInput" value="employee">
+
+        <div class="form-group mb-3">
+          <label class="form-label" id="usernameLabel">Employee ID / Username</label>
+          <div class="input-with-icon">
+            <i class="bi bi-person"></i>
+            <input type="text" name="username" class="form-control portal-input"
+                   placeholder="Enter your Employee ID" required autofocus>
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">Password</label>
+          <div class="input-with-icon">
+            <i class="bi bi-lock"></i>
+            <input type="password" name="password" class="form-control portal-input"
+                   id="passwordInput" placeholder="Enter your password" required>
+            <button type="button" class="eye-toggle" onclick="togglePass()">
+              <i class="bi bi-eye" id="eyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-login w-100">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Portal
+        </button>
+      </form>
+
+      <!-- Forgot Password link — prominent below login -->
+      <div class="text-center mt-3">
+        <a href="{{ url_for('auth.forgot_password') }}" class="forgot-password-link">
+          <i class="bi bi-key me-1"></i>Forgot Password?
+        </a>
+      </div>
+
+      <div class="login-divider"><span>Need Help?</span></div>
+
+      <div class="help-links">
+        <a href="{{ url_for('chatbot.support') }}" class="help-link-btn">
+          <i class="bi bi-chat-dots"></i> Chat with Support Bot
+        </a>
+        <a href="{{ url_for('tickets.track') }}" class="help-link-btn">
+          <i class="bi bi-search"></i> Track Your Ticket
+        </a>
+      </div>
+
+      <div class="login-footer">
+        <p>🔐 This is a secure, restricted government portal.<br>
+           Unauthorized access is prohibited under IT Act 2000.</p>
+      </div>
+    </div>
+
+    <div class="gov-footer-strip">
+      Government of Tamil Nadu &nbsp;|&nbsp; TNEB &nbsp;|&nbsp; IT Department
+    </div>
+  </div>
+</div>
+
+<style>
+.forgot-password-link {
+  font-size: 13.5px;
+  color: #004A99;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #004A99;
+  display: inline-flex;
+  align-items: center;
+  transition: background .14s, color .14s;
+}
+.forgot-password-link:hover {
+  background: #004A99;
+  color: #fff;
+}
+</style>
+
+<script>
+function setRole(role, btn) {
+  document.getElementById('roleInput').value = role;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('usernameLabel').textContent =
+    role === 'admin' ? 'Admin Username' : 'Employee ID / Username';
+}
+function togglePass() {
+  const inp = document.getElementById('passwordInput');
+  const ico = document.getElementById('eyeIcon');
+  if (inp.type === 'password') { inp.type = 'text';     ico.className = 'bi bi-eye-slash'; }
+  else                         { inp.type = 'password'; ico.className = 'bi bi-eye'; }
+}
+</script>
+{% endblock %}
