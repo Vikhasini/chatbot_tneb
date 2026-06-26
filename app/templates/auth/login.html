@@ -93,7 +93,7 @@
           </div>
         </div>
 
-        <div class="form-group mb-4">
+        <div class="form-group mb-3">
           <label class="form-label">Password</label>
           <div class="input-with-icon">
             <i class="bi bi-lock"></i>
@@ -105,12 +105,27 @@
           </div>
         </div>
 
+        <!-- CAPTCHA field -->
+        <div class="form-group mb-4">
+          <label class="form-label">Security Check</label>
+          <div class="captcha-wrap">
+            <div class="captcha-question" id="captchaQuestion">
+              {{ captcha_question }}
+            </div>
+            <input type="number" name="captcha" id="captchaInput"
+                   class="form-control portal-input captcha-input"
+                   placeholder="Answer" required autocomplete="off"
+                   inputmode="numeric">
+          </div>
+          <div class="captcha-hint">Solve the arithmetic problem above</div>
+        </div>
+
         <button type="submit" class="btn btn-login w-100">
           <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Portal
         </button>
       </form>
 
-      <!-- Forgot Password link — prominent below login -->
+      <!-- Forgot Password link -->
       <div class="text-center mt-3">
         <a href="{{ url_for('auth.forgot_password') }}" class="forgot-password-link">
           <i class="bi bi-key me-1"></i>Forgot Password?
@@ -153,9 +168,47 @@
   align-items: center;
   transition: background .14s, color .14s;
 }
-.forgot-password-link:hover {
-  background: #004A99;
+.forgot-password-link:hover { background: #004A99; color: #fff; }
+
+/* CAPTCHA */
+.captcha-wrap {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.captcha-question {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #004A99, #0F8B8D);
   color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+  letter-spacing: .05em;
+  padding: .55rem 1rem;
+  border-radius: 10px;
+  white-space: nowrap;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0,74,153,.25);
+  min-width: 130px;
+  text-align: center;
+}
+.captcha-input {
+  width: 110px !important;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+/* hide browser number spinners */
+.captcha-input::-webkit-inner-spin-button,
+.captcha-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.captcha-input[type=number] { -moz-appearance: textfield; }
+
+.captcha-hint {
+  font-size: 11px;
+  color: #9AA5BE;
+  margin-top: 5px;
 }
 </style>
 
